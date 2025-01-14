@@ -9,16 +9,27 @@ import android.location.Location
 import android.location.LocationListener
 import android.location.LocationManager
 import android.os.Bundle
+import android.util.Log
 import android.widget.GridLayout
 import android.widget.TextView
 import android.widget.Toast
 import androidx.core.app.ActivityCompat
 import androidx.constraintlayout.widget.ConstraintLayout
 import com.example.coffeeshop.R
+import com.example.coffeeshop.api_interface.CategoryApi
+import com.example.coffeeshop.api_interface.CoffeeApi
+import com.example.coffeeshop.data_class.Category
+import com.example.coffeeshop.data_class.Coffee
+import retrofit2.Call
+import retrofit2.Callback
+import retrofit2.Response
+import retrofit2.Retrofit
+import retrofit2.converter.gson.GsonConverterFactory
 import java.util.Locale
 
 class Home : Activity(), LocationListener {
-
+    private var BASE_URL = "http://10.0.2.2:5000/"
+    private var TAG = "DATA_RESPONSE"
     private lateinit var locationManager: LocationManager
     private lateinit var locationText: TextView
 
@@ -27,11 +38,9 @@ class Home : Activity(), LocationListener {
         super.onCreate(savedInstanceState)
         setContentView(R.layout.home)
 
-        // Lấy view TextView để hiển thị địa chỉ
-        locationText = findViewById(R.id.location)
+        locationText = findViewById(R.id.location) // Lấy view TextView để hiển thị địa chỉ
 
-        // Khởi tạo LocationManager
-        locationManager = getSystemService(LOCATION_SERVICE) as LocationManager
+        locationManager = getSystemService(LOCATION_SERVICE) as LocationManager // Khởi tạo LocationManager
 
         // Kiểm tra và yêu cầu quyền truy cập vị trí
         if (checkSelfPermission(android.Manifest.permission.ACCESS_FINE_LOCATION) == PackageManager.PERMISSION_GRANTED) {
@@ -64,6 +73,57 @@ class Home : Activity(), LocationListener {
         }
 
         getLocation()
+        getAllCoffees()
+        getAllCategories()
+    }
+
+    private fun getAllCoffees() {
+        val api = Retrofit.Builder()
+            .baseUrl(BASE_URL)
+            .addConverterFactory(GsonConverterFactory.create())
+            .build().create(CoffeeApi::class.java)
+
+        api.getAllCoffees().enqueue(object : Callback<List<Coffee>> {
+            override fun onResponse(call: Call<List<Coffee>>, response: Response<List<Coffee>>) {
+                if (response.isSuccessful) {
+                    response.body()?.let {
+                        for (i in it) {
+                            Log.i(TAG, "On Res: ${i.coffeeId}")
+                        }
+                    }
+                }
+            }
+
+            override fun onFailure(call: Call<List<Coffee>>, t: Throwable) {
+                Log.i(TAG, "On Fail: ${t.message}")
+            }
+
+        })
+    }
+
+    private fun getAllCategories() {
+        val api = Retrofit.Builder()
+            .baseUrl(BASE_URL)
+            .addConverterFactory(GsonConverterFactory.create())
+            .build().create(CategoryApi::class.java)
+
+        api.getAllCategories().enqueue(object : Callback<List<Category>> {
+            override fun onResponse(call: Call<List<Category>>, response: Response<List<Category>>) {
+                if (response.isSuccessful) {
+                    response.body()?.let {
+                        for (i in it) {
+                            Log.i(TAG, "On Res: ${i.categoryId}")
+                        }
+                    }
+                }
+            }
+
+            override fun onFailure(call: Call<List<Category>>, t: Throwable) {
+                Log.i(TAG, "On Fail: ${t.message}")
+            }
+
+
+        })
     }
 
     @SuppressLint("MissingPermission")
