@@ -15,11 +15,17 @@ import android.widget.TextView
 import android.widget.Toast
 import androidx.core.app.ActivityCompat
 import androidx.constraintlayout.widget.ConstraintLayout
+import androidx.recyclerview.widget.GridLayoutManager
+import androidx.recyclerview.widget.LinearLayoutManager
+import androidx.recyclerview.widget.RecyclerView
 import com.example.coffeeshop.R
+import com.example.coffeeshop.adapter.CategoryItemAdapter
+import com.example.coffeeshop.adapter.CoffeeItemAdapter
 import com.example.coffeeshop.api_interface.CategoryApi
 import com.example.coffeeshop.api_interface.CoffeeApi
 import com.example.coffeeshop.data_class.Category
 import com.example.coffeeshop.data_class.Coffee
+import com.example.coffeeshop.decoration.ItemMarginRight
 import retrofit2.Call
 import retrofit2.Callback
 import retrofit2.Response
@@ -33,6 +39,12 @@ class Home : Activity(), LocationListener {
     private lateinit var locationManager: LocationManager
     private lateinit var locationText: TextView
 
+    private lateinit var coffeeArrayList: ArrayList<Coffee>
+    private lateinit var coffeeRecyclerView: RecyclerView
+
+    private lateinit var categoryArrayList: ArrayList<Category>
+    private lateinit var categoryRecyclerView: RecyclerView
+
     @SuppressLint("WrongViewCast")
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
@@ -40,7 +52,8 @@ class Home : Activity(), LocationListener {
 
         locationText = findViewById(R.id.location) // Lấy view TextView để hiển thị địa chỉ
 
-        locationManager = getSystemService(LOCATION_SERVICE) as LocationManager // Khởi tạo LocationManager
+        locationManager =
+            getSystemService(LOCATION_SERVICE) as LocationManager // Khởi tạo LocationManager
 
         // Kiểm tra và yêu cầu quyền truy cập vị trí
         if (checkSelfPermission(android.Manifest.permission.ACCESS_FINE_LOCATION) == PackageManager.PERMISSION_GRANTED) {
@@ -60,21 +73,19 @@ class Home : Activity(), LocationListener {
             )
         }
 
-        // Xử lý sự kiện click vào các layout con
-        val layoutContainer = findViewById<GridLayout>(R.id.items_layout)
+        coffeeRecyclerView = findViewById(R.id.recycler_view)
+        coffeeRecyclerView.layoutManager = GridLayoutManager(this, 2)
+        coffeeRecyclerView.setHasFixedSize(true)
 
-        // Duyệt qua tất cả các con của GridLayout (tất cả ConstraintLayouts)
-        for (i in 0 until layoutContainer.childCount) {
-            val layout = layoutContainer.getChildAt(i) as? ConstraintLayout
-            layout?.setOnClickListener { view ->
-                val intent = Intent(this, Detail::class.java)
-                startActivity(intent)
-            }
-        }
+        categoryRecyclerView = findViewById(R.id.category_recycler_view)
+        categoryRecyclerView.layoutManager = LinearLayoutManager(this, LinearLayoutManager.HORIZONTAL, false)
+        val spacing = resources.getDimensionPixelSize(R.dimen.item_spacing)
+        categoryRecyclerView.addItemDecoration(ItemMarginRight(spacing))
 
         getLocation()
         getAllCoffees()
         getAllCategories()
+
     }
 
     private fun getAllCoffees() {
@@ -87,9 +98,12 @@ class Home : Activity(), LocationListener {
             override fun onResponse(call: Call<List<Coffee>>, response: Response<List<Coffee>>) {
                 if (response.isSuccessful) {
                     response.body()?.let {
-                        for (i in it) {
-                            Log.i(TAG, "On Res: ${i.coffeeId}")
-                        }
+//                        for (i in it) {
+//                            Log.i(TAG, "On Res: ${i.coffeeTitle}")
+//                        }
+
+                        coffeeArrayList = ArrayList(it)
+                        coffeeRecyclerView.adapter = CoffeeItemAdapter(coffeeArrayList);
                     }
                 }
             }
@@ -108,12 +122,18 @@ class Home : Activity(), LocationListener {
             .build().create(CategoryApi::class.java)
 
         api.getAllCategories().enqueue(object : Callback<List<Category>> {
-            override fun onResponse(call: Call<List<Category>>, response: Response<List<Category>>) {
+            override fun onResponse(
+                call: Call<List<Category>>,
+                response: Response<List<Category>>
+            ) {
                 if (response.isSuccessful) {
                     response.body()?.let {
                         for (i in it) {
-                            Log.i(TAG, "On Res: ${i.categoryId}")
+                            Log.i(TAG, "On Res: ${i.categoryTitle}")
                         }
+
+                        categoryArrayList = ArrayList(it)
+                        categoryRecyclerView.adapter = CategoryItemAdapter(categoryArrayList);
                     }
                 }
             }
@@ -126,6 +146,9 @@ class Home : Activity(), LocationListener {
         })
     }
 
+
+
+    // -------------------------------- Location ---------------------------------------- //
     @SuppressLint("MissingPermission")
     private fun getLocation() {
         try {
