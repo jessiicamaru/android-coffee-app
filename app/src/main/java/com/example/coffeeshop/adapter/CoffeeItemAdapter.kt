@@ -1,6 +1,8 @@
 package com.example.coffeeshop.adapter
 
 import android.annotation.SuppressLint
+import android.content.Context
+import android.content.Intent
 import android.view.LayoutInflater
 import android.view.View
 import android.view.ViewGroup
@@ -9,9 +11,10 @@ import android.widget.TextView
 import androidx.recyclerview.widget.RecyclerView
 import com.bumptech.glide.Glide
 import com.example.coffeeshop.R
+import com.example.coffeeshop.activity.Detail
 import com.example.coffeeshop.data_class.Coffee
 
-class CoffeeItemAdapter(private val coffeeList: ArrayList<Coffee>) :
+class CoffeeItemAdapter(private val coffeeList: ArrayList<Coffee>, private val context: Context) :
     RecyclerView.Adapter<CoffeeItemAdapter.CoffeeItemViewHolder>() {
 
     class CoffeeItemViewHolder(itemView: View) : RecyclerView.ViewHolder(itemView) {
@@ -46,6 +49,18 @@ class CoffeeItemAdapter(private val coffeeList: ArrayList<Coffee>) :
         holder.coffeeTitle.text = currentItem.coffeeTitle
         holder.categoryTitle.text = currentItem.categoryTitle
         holder.coffeeCost.text = "$ ${currentItem.coffeeCost}";
+
+        holder.itemView.setOnClickListener {
+            val intent = Intent(context, Detail::class.java).apply {
+                putExtra("coffeeId", currentItem.coffeeId)
+                putExtra("coffeeTitle", currentItem.coffeeTitle)
+                putExtra("coffeePhotoUrl", currentItem.coffeePhotoUrl)
+                putExtra("coffeeCost", currentItem.coffeeCost)
+                putExtra("coffeeDescription", currentItem.coffeeDescription)
+                putExtra("categoryTitle", currentItem.categoryTitle)
+            }
+            context.startActivity(intent)
+        }
     }
 
 

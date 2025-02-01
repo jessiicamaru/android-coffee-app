@@ -2,7 +2,6 @@ package com.example.coffeeshop.activity
 
 import android.annotation.SuppressLint
 import android.app.Activity
-import android.content.Intent
 import android.content.pm.PackageManager
 import android.location.Geocoder
 import android.location.Location
@@ -10,11 +9,10 @@ import android.location.LocationListener
 import android.location.LocationManager
 import android.os.Bundle
 import android.util.Log
-import android.widget.GridLayout
 import android.widget.TextView
 import android.widget.Toast
 import androidx.core.app.ActivityCompat
-import androidx.constraintlayout.widget.ConstraintLayout
+import androidx.core.content.ContentProviderCompat.requireContext
 import androidx.recyclerview.widget.GridLayoutManager
 import androidx.recyclerview.widget.LinearLayoutManager
 import androidx.recyclerview.widget.RecyclerView
@@ -103,7 +101,7 @@ class Home : Activity(), LocationListener {
 //                        }
 
                         coffeeArrayList = ArrayList(it)
-                        coffeeRecyclerView.adapter = CoffeeItemAdapter(coffeeArrayList);
+                        coffeeRecyclerView.adapter = CoffeeItemAdapter(coffeeArrayList, this@Home);
                     }
                 }
             }
