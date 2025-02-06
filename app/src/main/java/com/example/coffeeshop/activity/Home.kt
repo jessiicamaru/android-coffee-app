@@ -12,36 +12,29 @@ import android.util.Log
 import android.widget.TextView
 import android.widget.Toast
 import androidx.core.app.ActivityCompat
-import androidx.core.content.ContentProviderCompat.requireContext
 import androidx.recyclerview.widget.GridLayoutManager
 import androidx.recyclerview.widget.LinearLayoutManager
 import androidx.recyclerview.widget.RecyclerView
 import com.example.coffeeshop.R
 import com.example.coffeeshop.adapter.CategoryItemAdapter
 import com.example.coffeeshop.adapter.CoffeeItemAdapter
-import com.example.coffeeshop.api_interface.CategoryApi
-import com.example.coffeeshop.api_interface.CoffeeApi
-import com.example.coffeeshop.data_class.Category
-import com.example.coffeeshop.data_class.Coffee
 import com.example.coffeeshop.decoration.ItemMarginRight
-import retrofit2.Call
-import retrofit2.Callback
-import retrofit2.Response
-import retrofit2.Retrofit
-import retrofit2.converter.gson.GsonConverterFactory
+import com.example.coffeeshop.redux.data_class.AppState
+import com.example.coffeeshop.redux.store.Store
+import com.example.coffeeshop.service.Service
 import java.util.Locale
 
 class Home : Activity(), LocationListener {
-    private var BASE_URL = "http://10.0.2.2:5000/"
-    private var TAG = "DATA_RESPONSE"
+
     private lateinit var locationManager: LocationManager
     private lateinit var locationText: TextView
 
-    private lateinit var coffeeArrayList: ArrayList<Coffee>
     private lateinit var coffeeRecyclerView: RecyclerView
 
-    private lateinit var categoryArrayList: ArrayList<Category>
     private lateinit var categoryRecyclerView: RecyclerView
+
+    private var store = Store.Companion.store;
+    private var service = Service();
 
     @SuppressLint("WrongViewCast")
     override fun onCreate(savedInstanceState: Bundle?) {
@@ -52,6 +45,9 @@ class Home : Activity(), LocationListener {
 
         locationManager =
             getSystemService(LOCATION_SERVICE) as LocationManager // Khởi tạo LocationManager
+
+
+
 
         // Kiểm tra và yêu cầu quyền truy cập vị trí
         if (checkSelfPermission(android.Manifest.permission.ACCESS_FINE_LOCATION) == PackageManager.PERMISSION_GRANTED) {
@@ -76,73 +72,39 @@ class Home : Activity(), LocationListener {
         coffeeRecyclerView.setHasFixedSize(true)
 
         categoryRecyclerView = findViewById(R.id.category_recycler_view)
-        categoryRecyclerView.layoutManager = LinearLayoutManager(this, LinearLayoutManager.HORIZONTAL, false)
+        categoryRecyclerView.layoutManager =
+            LinearLayoutManager(this, LinearLayoutManager.HORIZONTAL, false)
         val spacing = resources.getDimensionPixelSize(R.dimen.item_spacing)
         categoryRecyclerView.addItemDecoration(ItemMarginRight(spacing))
 
+        store.subscribe {
+            val layoutManager = categoryRecyclerView.layoutManager
+            val scrollPosition = (layoutManager as LinearLayoutManager).findFirstVisibleItemPosition()
+            updateUI(store.state)
+            layoutManager.scrollToPosition(scrollPosition)
+        }
+
         getLocation()
-        getAllCoffees()
-        getAllCategories()
+        service.getAllCoffees()
+        service.getAllCategories()
 
     }
 
-    private fun getAllCoffees() {
-        val api = Retrofit.Builder()
-            .baseUrl(BASE_URL)
-            .addConverterFactory(GsonConverterFactory.create())
-            .build().create(CoffeeApi::class.java)
 
-        api.getAllCoffees().enqueue(object : Callback<List<Coffee>> {
-            override fun onResponse(call: Call<List<Coffee>>, response: Response<List<Coffee>>) {
-                if (response.isSuccessful) {
-                    response.body()?.let {
-//                        for (i in it) {
-//                            Log.i(TAG, "On Res: ${i.coffeeTitle}")
-//                        }
 
-                        coffeeArrayList = ArrayList(it)
-                        coffeeRecyclerView.adapter = CoffeeItemAdapter(coffeeArrayList, this@Home);
-                    }
-                }
-            }
+    private fun updateUI(state: AppState) {
+        // Cập nhật UI dựa trên state hiện tại
+        coffeeRecyclerView.adapter = CoffeeItemAdapter(state.coffees, this)
+        categoryRecyclerView.adapter = CategoryItemAdapter(state.categories)
 
-            override fun onFailure(call: Call<List<Coffee>>, t: Throwable) {
-                Log.i(TAG, "On Fail: ${t.message}")
-            }
-
-        })
+        val filteredCoffees = if (state.selectedCategory == "all") {
+            state.coffees // Hiển thị toàn bộ cà phê
+        } else {
+            state.coffees.filter { it.categoryId == state.selectedCategory }
+        }
+        coffeeRecyclerView.adapter = CoffeeItemAdapter(ArrayList(filteredCoffees), this)
     }
 
-    private fun getAllCategories() {
-        val api = Retrofit.Builder()
-            .baseUrl(BASE_URL)
-            .addConverterFactory(GsonConverterFactory.create())
-            .build().create(CategoryApi::class.java)
-
-        api.getAllCategories().enqueue(object : Callback<List<Category>> {
-            override fun onResponse(
-                call: Call<List<Category>>,
-                response: Response<List<Category>>
-            ) {
-                if (response.isSuccessful) {
-                    response.body()?.let {
-                        for (i in it) {
-                            Log.i(TAG, "On Res: ${i.categoryTitle}")
-                        }
-
-                        categoryArrayList = ArrayList(it)
-                        categoryRecyclerView.adapter = CategoryItemAdapter(categoryArrayList);
-                    }
-                }
-            }
-
-            override fun onFailure(call: Call<List<Category>>, t: Throwable) {
-                Log.i(TAG, "On Fail: ${t.message}")
-            }
-
-
-        })
-    }
 
 
 

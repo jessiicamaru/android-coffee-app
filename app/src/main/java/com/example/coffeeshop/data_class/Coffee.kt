@@ -7,4 +7,5 @@ data class Coffee(
     val coffeeCost: Double,
     val coffeeDescription: String,
     val categoryTitle: String,
+    val categoryId: String,
 )

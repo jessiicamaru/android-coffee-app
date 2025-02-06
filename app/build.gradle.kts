@@ -45,6 +45,7 @@ android {
 dependencies {
     //noinspection GradleDynamicVersion
     implementation("com.android.support:cardview-v7:27.+")
+    implementation("org.reduxkotlin:redux-kotlin:0.5.5")
     implementation(libs.converter.gson)
     implementation(libs.retrofit)
     implementation(platform(libs.firebase.bom))
