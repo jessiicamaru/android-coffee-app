@@ -4,6 +4,7 @@ import com.example.coffeeshop.data_class.Category
 import com.example.coffeeshop.data_class.Coffee
 
 sealed class Action {
+    data class SetAddress(val address: String?) : Action()
     data class SetCoffees(val coffees: ArrayList<Coffee>) : Action()
     data class SetCategories(val categories: ArrayList<Category>) : Action()
     data class SelectCategory(val categoryId: String?) : Action()

@@ -9,6 +9,7 @@ class Reducer {
         val appReducer: (AppState, Any) -> AppState = { state, action ->
             when (action) {
                 is Action.SetCoffees -> state.copy(coffees = action.coffees)
+                is Action.SetAddress -> state.copy(address = action.address)
                 is Action.SetCategories -> state.copy(categories = action.categories)
                 is Action.SelectCategory -> {
                     Log.d("REDUX_LOG", "${action.categoryId}")

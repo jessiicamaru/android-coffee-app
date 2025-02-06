@@ -4,6 +4,7 @@ import com.example.coffeeshop.data_class.Category
 import com.example.coffeeshop.data_class.Coffee
 
 data class AppState(
+    val address: String? = null,
     val coffees: ArrayList<Coffee> = arrayListOf(),
     val categories: ArrayList<Category> = arrayListOf(),
     val selectedCategory: String? = "all",
