@@ -53,6 +53,7 @@
             android:gravity="center">
 
             <ImageButton
+                android:id="@+id/like_button"
                 android:layout_width="match_parent"
                 android:layout_height="32dp"
                 android:background="@color/white"

@@ -18,6 +18,7 @@ class Detail : Activity() {
     private lateinit var categoryTitle: TextView
     private lateinit var coffeeCost: TextView
     private lateinit var coffeeDescription: TextView
+    private lateinit var likeButton: ImageView
 
     @SuppressLint("SetTextI18n")
     override fun onCreate(savedInstanceState: Bundle?) {

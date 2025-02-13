@@ -12,7 +12,20 @@
           "package_name": "com.example.coffeeshop"
         }
       },
-      "oauth_client": [],
+      "oauth_client": [
+        {
+          "client_id": "598140878789-8dtra9gt6bn4207m8a0baqevlh0uck36.apps.googleusercontent.com",
+          "client_type": 1,
+          "android_info": {
+            "package_name": "com.example.coffeeshop",
+            "certificate_hash": "68b6fa1528cb8a1fb0f9930c7ef77cfa480da9c0"
+          }
+        },
+        {
+          "client_id": "598140878789-8t1j0n4q15d0dae812pkojcadscn4f15.apps.googleusercontent.com",
+          "client_type": 3
+        }
+      ],
       "api_key": [
         {
           "current_key": "AIzaSyAqPoYTvbXoL_MZ0dQP3wjqBlW57Na6s8A"
@@ -20,7 +33,12 @@
       ],
       "services": {
         "appinvite_service": {
-          "other_platform_oauth_client": []
+          "other_platform_oauth_client": [
+            {
+              "client_id": "598140878789-8t1j0n4q15d0dae812pkojcadscn4f15.apps.googleusercontent.com",
+              "client_type": 3
+            }
+          ]
         }
       }
     }
