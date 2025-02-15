@@ -12,10 +12,11 @@ class Reducer {
                 is Action.SetAddress -> state.copy(address = action.address)
                 is Action.SetCategories -> state.copy(categories = action.categories)
                 is Action.SelectCategory -> {
-                    Log.d("REDUX_LOG", "${action.categoryId}")
+                    Log.d("REDUX_LOGSHIT", "${action.categoryId}")
                     state.copy(selectedCategory = action.categoryId)
                 }
                 is Action.AddOrder -> state.copy(orders = ArrayList(state.orders + action.coffee))
+                is Action.SaveUser -> state.copy(user = action.user)
                 else -> state
             }
         }

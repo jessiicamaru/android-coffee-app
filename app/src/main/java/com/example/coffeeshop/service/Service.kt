@@ -3,8 +3,10 @@ package com.example.coffeeshop.service
 import android.util.Log
 import com.example.coffeeshop.api_interface.CategoryApi
 import com.example.coffeeshop.api_interface.CoffeeApi
+import com.example.coffeeshop.api_interface.UserApi
 import com.example.coffeeshop.data_class.Category
 import com.example.coffeeshop.data_class.Coffee
+import com.example.coffeeshop.data_class.User
 import com.example.coffeeshop.redux.action.Action
 import com.example.coffeeshop.redux.store.Store
 import retrofit2.Call
@@ -63,4 +65,30 @@ class Service {
             }
         })
     }
+
+    fun postToSaveUser(user: User, callback: (Boolean) -> Unit) {
+        val api = Retrofit.Builder()
+            .baseUrl(BASE_URL)
+            .addConverterFactory(GsonConverterFactory.create())
+            .build().create(UserApi::class.java)
+
+        api.saveUser(user).enqueue(object : Callback<Int> {
+            override fun onResponse(call: Call<Int>, response: Response<Int>) {
+                if (response.isSuccessful) {
+                    store.dispatch(Action.SaveUser(user))
+                    Log.d("Retrofit", "User saved successfully! Response: ${response.body()}")
+                    callback(true)
+                } else {
+                    Log.e("Retrofit", "Request failed: ${response.errorBody()}")
+                    callback(false)
+                }
+            }
+
+            override fun onFailure(call: Call<Int>, t: Throwable) {
+                Log.e("Retrofit", "Request failed: ${t.message}")
+                callback(false)
+            }
+        })
+    }
+
 }

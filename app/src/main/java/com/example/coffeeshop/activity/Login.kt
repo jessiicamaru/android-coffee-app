@@ -6,6 +6,8 @@ import android.os.Bundle
 import com.example.coffeeshop.R
 import android.widget.LinearLayout
 import android.util.Log
+import com.example.coffeeshop.data_class.User
+import com.example.coffeeshop.service.Service
 import com.google.android.gms.auth.api.signin.GoogleSignIn
 import com.google.android.gms.auth.api.signin.GoogleSignInClient
 import com.google.android.gms.auth.api.signin.GoogleSignInOptions
@@ -18,6 +20,7 @@ import com.google.firebase.ktx.Firebase
 class Login : Activity() {
     private lateinit var mGoogleSignInClient: GoogleSignInClient
     private lateinit var mAuth: FirebaseAuth
+    private var service = Service();
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
@@ -29,35 +32,50 @@ class Login : Activity() {
             .requestIdToken(getString(R.string.default_web_client_id))
             .requestEmail()
             .build()
-
         mGoogleSignInClient = GoogleSignIn.getClient(this, gso)
+
+        Log.d("client_id", "${R.string.default_web_client_id}")
+
 
         val myLinearLayout = findViewById<LinearLayout>(R.id.gmail_button)
         myLinearLayout.setOnClickListener {
             signIn()
         }
+
+        Log.d("FIREBASE_INIT", "Firebase Auth: ${FirebaseAuth.getInstance()}")
     }
 
     private fun signIn() {
         val signInIntent = mGoogleSignInClient.signInIntent
+
+        if (signInIntent == null) {
+            Log.e("GOOGLE_SIGNIN", "Lỗi: signInIntent bị null")
+        } else {
+            startActivityForResult(signInIntent, RC_SIGN_IN)
+        }
+
         startActivityForResult(signInIntent, RC_SIGN_IN)
+        Log.d("GOOGLE_SIGNIN", "GoogleSignInClient: ${mGoogleSignInClient}")
     }
 
     override fun onActivityResult(requestCode: Int, resultCode: Int, data: Intent?) {
         super.onActivityResult(requestCode, resultCode, data)
 
+        Log.d("GOOGLE_SIGNIN", "onActivityResult: requestCode = $requestCode, resultCode = $resultCode")
+
         if (requestCode == RC_SIGN_IN) {
             val task = GoogleSignIn.getSignedInAccountFromIntent(data)
             try {
                 val account = task.getResult(ApiException::class.java)!!
-                Log.d("FIREBASE_LOGSHIT", "Google Sign In thành công: ${account.id}")
+                Log.d("GOOGLE_SIGNIN", "Google Sign-In thành công: ${account.id}")
 
                 firebaseAuthWithGoogle(account.idToken!!)
             } catch (e: ApiException) {
-                Log.w("FIREBASE_LOGSHIT", "Google sign in thất bại", e)
+                Log.e("GOOGLE_SIGNIN", "Google Sign-In thất bại: ${e.statusCode}")
             }
         }
     }
+
 
     private fun firebaseAuthWithGoogle(idToken: String) {
         val credential = GoogleAuthProvider.getCredential(idToken, null)
@@ -76,16 +94,32 @@ class Login : Activity() {
                         🔹 Email Verified: ${it.isEmailVerified}
                         🔹 Provider ID: ${it.providerId}
                     """.trimIndent())
-                    }
 
-                    val intent = Intent(this, Home::class.java)
-                    startActivity(intent)
-                    finish()
+                        val userData = User(
+                            uid = it.uid,
+                            displayName = it.displayName ?: "Unknown",
+                            email = it.email ?: "Unknown",
+                            phoneNumber = it.phoneNumber ?: "Unknown",
+                            photoUrl = it.photoUrl?.toString() ?: ""
+                        )
+
+                        service.postToSaveUser(userData) { success ->
+                            if (success) {
+                                val intent = Intent(this@Login, Home::class.java)
+                                startActivity(intent)
+                                finish()
+                            } else {
+                                Log.e("Retrofit", "Lưu user thất bại")
+                            }
+                        }
+                    }
                 } else {
                     Log.w("FIREBASE_LOG", "Đăng nhập Firebase thất bại", task.exception)
                 }
             }
     }
+
+
     companion object {
         private const val RC_SIGN_IN = 9001
     }
