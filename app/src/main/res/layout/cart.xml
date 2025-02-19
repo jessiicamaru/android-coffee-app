@@ -9,128 +9,37 @@
 
 
     <androidx.constraintlayout.widget.ConstraintLayout
-        android:id="@+id/search_layout"
+        android:id="@+id/title"
         android:layout_width="match_parent"
-        android:layout_height="179dp"
-        android:background="#313131"
-        android:gravity="center"
-        android:orientation="horizontal"
-        android:paddingStart="32dp"
+        android:layout_height="wrap_content"
+        android:paddingHorizontal="32dp"
         android:paddingTop="32dp"
-        android:paddingEnd="32dp"
-        app:layout_constraintEnd_toEndOf="parent"
-        app:layout_constraintStart_toStartOf="parent"
         tools:ignore="MissingConstraints">
-
-        <TextView
-            android:id="@+id/locationTitle"
-            android:layout_width="wrap_content"
-            android:layout_height="wrap_content"
-            android:layout_marginStart="48dp"
-            android:layout_marginTop="16dp"
-            android:fontFamily="@font/sora_light"
-            android:text="Location"
-            android:textAllCaps="false"
-            android:textColor="#A2A2A2"
-            android:textSize="12sp" />
 
         <TextView
             android:id="@+id/location"
             android:layout_width="wrap_content"
             android:layout_height="52dp"
             android:fontFamily="@font/sora_semibold"
-            android:text="Finding..."
+            android:gravity="center"
+            android:text="Your cart"
             android:textAllCaps="false"
-            android:textColor="#D8D8D8"
-            android:textSize="14sp"
-            app:layout_constraintTop_toBottomOf="@id/locationTitle" />
-
-        <LinearLayout
-            android:layout_width="match_parent"
-            android:layout_height="wrap_content"
-            app:layout_constraintTop_toBottomOf="@id/location">
-
-            <EditText
-                android:id="@+id/inputCoffee"
-                android:layout_width="278dp"
-                android:layout_height="52dp"
-                android:background="@drawable/only_rounded"
-                android:backgroundTint="#2A2A2A"
-                android:hint="Search coffee"
-                android:inputType="text"
-                android:padding="16sp"
-                android:textColorHint="#A2A2A2"
-                android:textSize="14sp" />
-
-            <LinearLayout
-                android:layout_width="52dp"
-                android:layout_height="52dp"
-                android:layout_marginLeft="16dp"
-                android:background="@drawable/button_primary"
-                android:gravity="center"
-                app:layout_constraintLeft_toRightOf="@id/inputCoffee">
-
-                <ImageView
-                    android:layout_width="28dp"
-                    android:layout_height="28dp"
-                    android:src="@drawable/search_icon" />
-            </LinearLayout>
-        </LinearLayout>
-
-
-    </androidx.constraintlayout.widget.ConstraintLayout>
-
-    <androidx.constraintlayout.widget.ConstraintLayout
-        android:id="@+id/promote"
-        android:layout_width="match_parent"
-        android:layout_height="wrap_content"
-        android:layout_marginTop="16dp"
-        android:paddingHorizontal="32dp"
-        app:layout_constraintTop_toBottomOf="@id/search_layout"
-        tools:ignore="MissingConstraints">
-
-        <ImageView
-            android:layout_width="match_parent"
-            android:layout_height="170dp"
-            android:src="@drawable/banner"
-            app:layout_constraintEnd_toEndOf="parent"
-            app:layout_constraintHorizontal_bias="0.5"
-            app:layout_constraintStart_toStartOf="parent"
-            app:layout_constraintTop_toTopOf="parent" />
-    </androidx.constraintlayout.widget.ConstraintLayout>
-
-    <androidx.constraintlayout.widget.ConstraintLayout
-        android:id="@+id/categories"
-        android:layout_width="match_parent"
-        android:layout_height="wrap_content"
-        android:layout_marginTop="16dp"
-        android:paddingStart="32dp"
-        android:paddingEnd="32dp"
-        app:layout_constraintTop_toBottomOf="@id/promote">
-
-        <androidx.recyclerview.widget.RecyclerView
-            android:id="@+id/category_recycler_view"
-            android:layout_width="match_parent"
-            android:layout_height="wrap_content"
-            android:descendantFocusability="blocksDescendants"
-            android:orientation="horizontal"
-            tools:ignore="MissingConstraints" />
-
-
+            android:textColor="#000"
+            android:textSize="28sp" />
     </androidx.constraintlayout.widget.ConstraintLayout>
 
 
     <ScrollView xmlns:android="http://schemas.android.com/apk/res/android"
         android:layout_width="match_parent"
         android:layout_height="match_parent"
-        android:layout_marginTop="444dp"
+        android:layout_marginTop="100sp"
         android:fillViewport="true"
         android:paddingStart="32dp"
         android:paddingEnd="32dp"
-        android:paddingBottom="72dp"
+        android:paddingBottom="120dp"
         android:scrollbars="none"
         app:layout_constraintBottom_toTopOf="@id/navigation"
-        app:layout_constraintTop_toBottomOf="@id/categories">
+        app:layout_constraintTop_toBottomOf="@id/title">
 
         <LinearLayout
             android:layout_width="match_parent"
@@ -138,7 +47,7 @@
             android:orientation="vertical">
 
             <androidx.recyclerview.widget.RecyclerView
-                android:id="@+id/recycler_view"
+                android:id="@+id/cart_recycler_view"
                 android:layout_width="match_parent"
                 android:layout_height="match_parent"
                 android:useDefaultMargins="true"
@@ -149,6 +58,29 @@
 
         </LinearLayout>
     </ScrollView>
+
+    <androidx.constraintlayout.widget.ConstraintLayout
+        android:id="@+id/totalLayout"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:layout_marginBottom="10dp"
+        android:paddingHorizontal="32dp"
+        app:layout_constraintBottom_toTopOf="@id/navigation"
+        tools:ignore="MissingConstraints">
+
+        <TextView
+            android:id="@+id/totalAmount"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:fontFamily="@font/sora_semibold"
+            android:gravity="end"
+            android:text="Total: 30$"
+            android:textAllCaps="false"
+            android:textColor="#000"
+            android:textSize="20sp"
+
+            />
+    </androidx.constraintlayout.widget.ConstraintLayout>
 
 
     <GridLayout
@@ -176,7 +108,7 @@
             <ImageButton
                 android:layout_width="wrap_content"
                 android:layout_height="wrap_content"
-                android:background="@drawable/active_nav_button"
+                android:background="@drawable/non_active_nav_button"
                 android:padding="8dp"
                 android:src="@drawable/ic_home" />
         </LinearLayout>
@@ -192,7 +124,6 @@
 
             <ImageButton
                 android:layout_width="wrap_content"
-
                 android:layout_height="wrap_content"
                 android:background="@drawable/non_active_nav_button"
                 android:padding="8dp"
@@ -211,7 +142,7 @@
             <ImageButton
                 android:layout_width="wrap_content"
                 android:layout_height="wrap_content"
-                android:background="@drawable/non_active_nav_button"
+                android:background="@drawable/active_nav_button"
                 android:padding="8dp"
                 android:src="@drawable/ic_bag" />
         </LinearLayout>

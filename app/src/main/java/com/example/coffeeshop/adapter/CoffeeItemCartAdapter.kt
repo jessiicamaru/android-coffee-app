@@ -14,12 +14,14 @@ import com.bumptech.glide.Glide
 import com.example.coffeeshop.R
 import com.example.coffeeshop.activity.Detail
 import com.example.coffeeshop.data_class.Coffee
-import com.example.coffeeshop.data_class.CoffeeCart
 import com.example.coffeeshop.redux.action.Action
 import com.example.coffeeshop.redux.store.Store
 
-class CoffeeItemAdapter(private val coffeeList: ArrayList<Coffee>, private val context: Context) :
-    RecyclerView.Adapter<CoffeeItemAdapter.CoffeeItemViewHolder>() {
+class CoffeeItemCartAdapter(
+    private val coffeeList: ArrayList<Coffee>,
+    private val context: Context
+) :
+    RecyclerView.Adapter<CoffeeItemCartAdapter.CoffeeItemViewHolder>() {
 
     private val store = Store.store;
 
@@ -28,12 +30,15 @@ class CoffeeItemAdapter(private val coffeeList: ArrayList<Coffee>, private val c
         val coffeeTitle: TextView = itemView.findViewById(R.id.coffee_title)
         val categoryTitle: TextView = itemView.findViewById(R.id.category_title)
         val coffeeCost: TextView = itemView.findViewById(R.id.coffee_cost)
-        val addButton: Button = itemView.findViewById(R.id.add_button)
+//        val removeButton: Button = itemView.findViewById(R.id.remove_button)
+        val increaseButton: Button = itemView.findViewById(R.id.increase_button)
+        val decreaseButton: Button = itemView.findViewById(R.id.decrease_button)
+        val quantity: TextView = itemView.findViewById(R.id.quantity)
     }
 
     override fun onCreateViewHolder(parent: ViewGroup, viewType: Int): CoffeeItemViewHolder {
         val itemView =
-            LayoutInflater.from(parent.context).inflate(R.layout.coffee_item, parent, false)
+            LayoutInflater.from(parent.context).inflate(R.layout.coffee_item_cart, parent, false)
 
         return CoffeeItemViewHolder(itemView);
     }
@@ -56,6 +61,7 @@ class CoffeeItemAdapter(private val coffeeList: ArrayList<Coffee>, private val c
         holder.coffeeTitle.text = currentItem.coffeeTitle
         holder.categoryTitle.text = currentItem.categoryTitle
         holder.coffeeCost.text = "$ ${currentItem.coffeeCost}";
+        holder.quantity.text = "${currentItem.quantity}";
 
         holder.itemView.setOnClickListener {
             val intent = Intent(context, Detail::class.java).apply {
@@ -69,20 +75,28 @@ class CoffeeItemAdapter(private val coffeeList: ArrayList<Coffee>, private val c
             context.startActivity(intent)
         }
 
-        holder.addButton.setOnClickListener {
-            store.dispatch(
-                Action.AddOrder(
-                    Coffee(
-                        coffeeId = currentItem.coffeeId,
-                        coffeeTitle = currentItem.coffeeTitle,
-                        coffeePhotoUrl = currentItem.coffeePhotoUrl,
-                        coffeeCost = currentItem.coffeeCost,
-                        coffeeDescription = currentItem.coffeeDescription,
-                        categoryTitle = currentItem.categoryTitle,
-                        categoryId = currentItem.categoryId,
-                    ),
-                )
-            )
+//        holder.removeButton.setOnClickListener {
+//            store.dispatch(
+//                Action.RemoveOrder(
+//                    Coffee(
+//                        coffeeId = currentItem.coffeeId,
+//                        coffeeTitle = currentItem.coffeeTitle,
+//                        coffeePhotoUrl = currentItem.coffeePhotoUrl,
+//                        coffeeCost = currentItem.coffeeCost,
+//                        coffeeDescription = currentItem.coffeeDescription,
+//                        categoryTitle = currentItem.categoryTitle,
+//                        categoryId = currentItem.categoryId,
+//                    )
+//                )
+//            )
+//        }
+
+        holder.increaseButton.setOnClickListener {
+            store.dispatch(Action.IncreaseOrderQuantity(currentItem.coffeeId))
+        }
+
+        holder.decreaseButton.setOnClickListener {
+            store.dispatch(Action.DecreaseOrderQuantity(currentItem.coffeeId))
         }
     }
 }

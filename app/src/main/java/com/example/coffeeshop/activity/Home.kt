@@ -2,7 +2,9 @@ package com.example.coffeeshop.activity
 
 import android.annotation.SuppressLint
 import android.app.Activity
+import android.content.Intent
 import android.os.Bundle
+import android.widget.LinearLayout
 import android.widget.TextView
 import androidx.recyclerview.widget.GridLayoutManager
 import androidx.recyclerview.widget.LinearLayoutManager
@@ -22,6 +24,8 @@ class Home : Activity() {
     private lateinit var coffeeRecyclerView: RecyclerView
 
     private lateinit var categoryRecyclerView: RecyclerView
+
+    private lateinit var bagButton: LinearLayout;
 
     private var store = Store.Companion.store;
     private var service = Service();
@@ -55,6 +59,13 @@ class Home : Activity() {
         service.getAllCoffees()
         service.getAllCategories()
 
+
+        bagButton = findViewById(R.id.bagButton)
+        bagButton.setOnClickListener {
+            val intent = Intent(this, Cart::class.java)
+            startActivity(intent)
+        }
+
     }
 
 
@@ -73,9 +84,4 @@ class Home : Activity() {
         }
         coffeeRecyclerView.adapter = CoffeeItemAdapter(ArrayList(filteredCoffees), this)
     }
-
-
-
-
-
 }

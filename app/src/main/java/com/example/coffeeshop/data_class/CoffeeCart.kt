@@ -1,6 +1,6 @@
 package com.example.coffeeshop.data_class
 
-data class Coffee(
+data class CoffeeCart(
     val coffeeId: String,
     val coffeeTitle: String,
     val coffeePhotoUrl: String,
@@ -8,5 +8,5 @@ data class Coffee(
     val coffeeDescription: String,
     val categoryTitle: String,
     val categoryId: String,
-    var quantity: Int = 1
+    val amount: Int
 )
