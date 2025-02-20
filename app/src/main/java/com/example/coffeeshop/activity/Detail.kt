@@ -11,6 +11,9 @@ import android.widget.ImageView
 import android.widget.TextView
 import com.bumptech.glide.Glide
 import com.example.coffeeshop.R
+import com.example.coffeeshop.data_class.Likes
+import com.example.coffeeshop.redux.store.Store
+import com.example.coffeeshop.service.Service
 
 class Detail : Activity() {
     private lateinit var coffeeImage: ImageView
@@ -19,6 +22,8 @@ class Detail : Activity() {
     private lateinit var coffeeCost: TextView
     private lateinit var coffeeDescription: TextView
     private lateinit var likeButton: ImageView
+    private val service = Service();
+    private val store = Store.Companion.store
 
     @SuppressLint("SetTextI18n")
     override fun onCreate(savedInstanceState: Bundle?) {
@@ -32,6 +37,7 @@ class Detail : Activity() {
         categoryTitle = findViewById(R.id.category_title)
         coffeeCost = findViewById(R.id.coffee_cost)
         coffeeDescription = findViewById(R.id.coffee_description)
+        likeButton = findViewById(R.id.like_button)
 
         val returnButton: ImageButton = findViewById(R.id.return_button)
         returnButton.setOnClickListener {
@@ -55,5 +61,18 @@ class Detail : Activity() {
             .placeholder(R.drawable.caffe_mocha)
             .error(R.drawable.caffe_mocha)
             .into(coffeeImage)
+
+        likeButton.setOnClickListener {
+            store.state.user?.let { user ->
+                val like = Likes(
+                    uid = user.uid,
+                    coffeeId = intent.getStringExtra("coffeeId") ?: ""
+                )
+
+                Log.d("ADD_LIKE_COFFEE", "${intent.getStringExtra("coffeeId")} + ${user.uid}")
+                service.addLikeCoffee(like)
+            }
+        }
+
     }
 }

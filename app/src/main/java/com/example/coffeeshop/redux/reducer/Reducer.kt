@@ -22,12 +22,12 @@ class Reducer {
 //                }
 
                 is Action.AddOrder -> {
-                    val existingOrder = state.orders.find { it.categoryId == action.coffee.coffeeId }
+                    val existingOrder = state.orders.find { it.coffeeId == action.coffee.coffeeId }
 
                     val updatedOrders = if (existingOrder != null) {
                         state.orders.map { coffee ->
                             if (coffee.coffeeId == action.coffee.coffeeId) {
-                                coffee.copy(quantity = coffee.quantity + action.quantity)  // Tăng số lượng
+                                coffee.copy(quantity = coffee.quantity + action.quantity)
                             } else coffee
                         }
                     } else {
@@ -36,6 +36,7 @@ class Reducer {
 
                     state.copy(orders = ArrayList(updatedOrders))
                 }
+
 
                 is Action.SaveUser -> state.copy(user = action.user)
                 is Action.RefreshOrders -> state.copy(orders = ArrayList(state.orders))
@@ -56,9 +57,9 @@ class Reducer {
                     val updatedOrders = state.orders.mapNotNull { coffee ->
                         when {
                             coffee.coffeeId == action.coffeeId && coffee.quantity > 1 ->
-                                coffee.copy(quantity = coffee.quantity - 1) // Giảm số lượng
+                                coffee.copy(quantity = coffee.quantity - 1)
                             coffee.coffeeId == action.coffeeId && coffee.quantity == 1 ->
-                                null // Nếu số lượng = 1 thì xóa khỏi giỏ
+                                null
                             else -> coffee
                         }
                     }

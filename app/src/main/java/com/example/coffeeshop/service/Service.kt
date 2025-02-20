@@ -3,9 +3,11 @@ package com.example.coffeeshop.service
 import android.util.Log
 import com.example.coffeeshop.api_interface.CategoryApi
 import com.example.coffeeshop.api_interface.CoffeeApi
+import com.example.coffeeshop.api_interface.LikesApi
 import com.example.coffeeshop.api_interface.UserApi
 import com.example.coffeeshop.data_class.Category
 import com.example.coffeeshop.data_class.Coffee
+import com.example.coffeeshop.data_class.Likes
 import com.example.coffeeshop.data_class.User
 import com.example.coffeeshop.redux.action.Action
 import com.example.coffeeshop.redux.store.Store
@@ -87,6 +89,28 @@ class Service {
             override fun onFailure(call: Call<Int>, t: Throwable) {
                 Log.e("Retrofit", "Request failed: ${t.message}")
                 callback(false)
+            }
+        })
+    }
+
+    fun addLikeCoffee(likes: Likes) {
+        val api = Retrofit.Builder()
+            .baseUrl(BASE_URL)
+            .addConverterFactory(GsonConverterFactory.create())
+            .build().create(LikesApi::class.java)
+
+        api.addLikeCoffee(likes).enqueue(object : Callback<Int> {
+            override fun onResponse(call: Call<Int>, response: Response<Int>) {
+                if (response.isSuccessful) {
+                    Log.d("Retrofit", "Add coffee successfully! Response: ${response.body()}")
+                } else {
+                    Log.e("Retrofit", "Add coffee failed: ${response.errorBody()}")
+                }
+            }
+
+            override fun onFailure(call: Call<Int>, t: Throwable) {
+                Log.e("Retrofit", "Add coffee failed: ${t.message}")
+
             }
         })
     }
