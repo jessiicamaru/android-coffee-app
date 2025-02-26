@@ -14,14 +14,12 @@ import com.bumptech.glide.Glide
 import com.example.coffeeshop.R
 import com.example.coffeeshop.activity.Detail
 import com.example.coffeeshop.data_class.Coffee
+import com.example.coffeeshop.data_class.CoffeeCart
 import com.example.coffeeshop.redux.action.Action
 import com.example.coffeeshop.redux.store.Store
 
-class CoffeeItemCartAdapter(
-    private val coffeeList: ArrayList<Coffee>,
-    private val context: Context
-) :
-    RecyclerView.Adapter<CoffeeItemCartAdapter.CoffeeItemViewHolder>() {
+class CoffeeItemLikeAdapter(private val coffeeList: ArrayList<Coffee>, private val context: Context) :
+    RecyclerView.Adapter<CoffeeItemLikeAdapter.CoffeeItemViewHolder>() {
 
     private val store = Store.store;
 
@@ -29,17 +27,12 @@ class CoffeeItemCartAdapter(
         val coffeeImage: ImageView = itemView.findViewById(R.id.coffee_image)
         val coffeeTitle: TextView = itemView.findViewById(R.id.coffee_title)
         val categoryTitle: TextView = itemView.findViewById(R.id.category_title)
-        val coffeeCost: TextView = itemView.findViewById(R.id.coffee_cost)
-//        val removeButton: Button = itemView.findViewById(R.id.remove_button)
-        val increaseButton: Button = itemView.findViewById(R.id.increase_button)
-        val decreaseButton: Button = itemView.findViewById(R.id.decrease_button)
-        val quantity: TextView = itemView.findViewById(R.id.quantity)
-        val size: TextView = itemView.findViewById(R.id.size)
+        val removeButton: Button = itemView.findViewById(R.id.remove)
     }
 
     override fun onCreateViewHolder(parent: ViewGroup, viewType: Int): CoffeeItemViewHolder {
         val itemView =
-            LayoutInflater.from(parent.context).inflate(R.layout.coffee_item_cart, parent, false)
+            LayoutInflater.from(parent.context).inflate(R.layout.coffee_item_like, parent, false)
 
         return CoffeeItemViewHolder(itemView);
     }
@@ -58,11 +51,9 @@ class CoffeeItemCartAdapter(
             .error(R.drawable.caffe_mocha) // Ảnh hiển thị nếu tải ảnh thất bại
             .into(holder.coffeeImage) // ImageView cần hiển thị ảnh
 
+        // Gán dữ liệu khác
         holder.coffeeTitle.text = currentItem.coffeeTitle
         holder.categoryTitle.text = currentItem.categoryTitle
-        holder.coffeeCost.text = "$ ${currentItem.coffeeCost}";
-        holder.quantity.text = "${currentItem.quantity}";
-        holder.size.text = "Size: ${currentItem.size}"
 
         holder.itemView.setOnClickListener {
             val intent = Intent(context, Detail::class.java).apply {
@@ -77,28 +68,6 @@ class CoffeeItemCartAdapter(
             context.startActivity(intent)
         }
 
-//        holder.removeButton.setOnClickListener {
-//            store.dispatch(
-//                Action.RemoveOrder(
-//                    Coffee(
-//                        coffeeId = currentItem.coffeeId,
-//                        coffeeTitle = currentItem.coffeeTitle,
-//                        coffeePhotoUrl = currentItem.coffeePhotoUrl,
-//                        coffeeCost = currentItem.coffeeCost,
-//                        coffeeDescription = currentItem.coffeeDescription,
-//                        categoryTitle = currentItem.categoryTitle,
-//                        categoryId = currentItem.categoryId,
-//                    )
-//                )
-//            )
-//        }
 
-        holder.increaseButton.setOnClickListener {
-            store.dispatch(Action.IncreaseOrderQuantity(currentItem.coffeeId, currentItem.size))
-        }
-
-        holder.decreaseButton.setOnClickListener {
-            store.dispatch(Action.DecreaseOrderQuantity(currentItem.coffeeId, currentItem.size))
-        }
     }
 }

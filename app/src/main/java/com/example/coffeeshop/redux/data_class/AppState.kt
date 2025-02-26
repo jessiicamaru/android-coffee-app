@@ -10,5 +10,6 @@ data class AppState(
     val categories: ArrayList<Category> = arrayListOf(),
     val selectedCategory: String? = "all",
     val orders: MutableList<Coffee> = arrayListOf(),
+    val likeCoffees: ArrayList<Coffee> = arrayListOf(),
     val user: User? = null
 )

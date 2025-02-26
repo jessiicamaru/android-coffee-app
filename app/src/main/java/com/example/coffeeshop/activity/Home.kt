@@ -26,6 +26,7 @@ class Home : Activity() {
     private lateinit var categoryRecyclerView: RecyclerView
 
     private lateinit var bagButton: LinearLayout;
+    private lateinit var heartButton: LinearLayout
 
     private var store = Store.Companion.store;
     private var service = Service();
@@ -50,7 +51,8 @@ class Home : Activity() {
 
         store.subscribe {
             val layoutManager = categoryRecyclerView.layoutManager
-            val scrollPosition = (layoutManager as LinearLayoutManager).findFirstVisibleItemPosition()
+            val scrollPosition =
+                (layoutManager as LinearLayoutManager).findFirstVisibleItemPosition()
             updateUI(store.state)
             layoutManager.scrollToPosition(scrollPosition)
         }
@@ -66,8 +68,13 @@ class Home : Activity() {
             startActivity(intent)
         }
 
-    }
+        heartButton = findViewById(R.id.heartButton)
+        heartButton.setOnClickListener {
+            val intent = Intent(this, Like::class.java)
+            startActivity(intent)
+        }
 
+    }
 
 
     private fun updateUI(state: AppState) {

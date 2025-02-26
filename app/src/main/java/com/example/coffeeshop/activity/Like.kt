@@ -14,23 +14,25 @@ import com.example.coffeeshop.R
 import com.example.coffeeshop.adapter.CategoryItemAdapter
 import com.example.coffeeshop.adapter.CoffeeItemAdapter
 import com.example.coffeeshop.adapter.CoffeeItemCartAdapter
+import com.example.coffeeshop.adapter.CoffeeItemLikeAdapter
 import com.example.coffeeshop.redux.action.Action
 import com.example.coffeeshop.redux.data_class.AppState
 import com.example.coffeeshop.redux.store.Store
+import com.example.coffeeshop.service.Service
 
-class Cart : Activity() {
+class Like : Activity() {
     private lateinit var homeButton: LinearLayout;
-    private lateinit var heartButton: LinearLayout
+    private lateinit var bagButton: LinearLayout;
 
     private lateinit var coffeeRecyclerView: RecyclerView
 
-    private lateinit var totalAmount: TextView
 
     private var store = Store.Companion.store;
+    private val service = Service();
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
-        setContentView(R.layout.cart)
+        setContentView(R.layout.like)
 
         homeButton = findViewById(R.id.homeButton);
         homeButton.setOnClickListener {
@@ -38,40 +40,36 @@ class Cart : Activity() {
             startActivity(intent)
         }
 
-        heartButton = findViewById(R.id.heartButton)
-        heartButton.setOnClickListener {
-            val intent = Intent(this, Like::class.java)
+        bagButton = findViewById(R.id.bagButton)
+        bagButton.setOnClickListener {
+            val intent = Intent(this, Cart::class.java)
             startActivity(intent)
         }
 
-
-        totalAmount = findViewById(R.id.totalAmount)
-
-
         coffeeRecyclerView = findViewById(R.id.cart_recycler_view)
-        coffeeRecyclerView.layoutManager = GridLayoutManager(this, 2)
+        coffeeRecyclerView.layoutManager = GridLayoutManager(this, 1)
         coffeeRecyclerView.setHasFixedSize(true)
 
+        Log.d("store.state.user?.uid?", "${store.state.user?.uid}")
+
+        store.state.user?.uid?.let {
+            service.getLikeCoffees(it)
+        }
 
         store.subscribe {
             updateUI(store.state)
         }
 
-        store.dispatch(Action.RefreshOrders)
+        store.dispatch(Action.RefreshOrders);
 
     }
 
     @SuppressLint("DefaultLocale", "SetTextI18n")
     private fun updateUI(state: AppState) {
-        Log.d("UPDATE_UI", "Orders: ${state.orders}")
+        Log.d("UPDATE_UI", "FAV: ${state.likeCoffees}")
 
-        val totalMoney = state.orders.sumOf { it.coffeeCost * it.quantity }
-
-        totalAmount.text = "Total: ${String.format("%.2f", totalMoney).toDouble()}$"
-
-        coffeeRecyclerView.adapter = CoffeeItemCartAdapter(ArrayList(state.orders), this)
+        coffeeRecyclerView.adapter = CoffeeItemLikeAdapter(ArrayList(state.likeCoffees), this)
 
     }
-
 
 }

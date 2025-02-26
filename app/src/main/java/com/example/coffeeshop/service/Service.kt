@@ -115,4 +115,31 @@ class Service {
         })
     }
 
+    fun getLikeCoffees(uid: String) {
+        val api = Retrofit.Builder()
+            .baseUrl(BASE_URL)
+            .addConverterFactory(GsonConverterFactory.create())
+            .build().create(LikesApi::class.java)
+
+        Log.d("SHIT_FAV", uid)
+
+        api.getLikeCoffees(uid).enqueue(object : Callback<List<Coffee>> {
+            override fun onResponse(
+                call: Call<List<Coffee>>,
+                response: Response<List<Coffee>>
+            ) {
+                if (response.isSuccessful) {
+                    response.body()?.let {
+                        store.dispatch(Action.SetLikeCoffees(ArrayList(it)))
+                        Log.d("SHIT_FAV", "$it")
+                    }
+                }
+            }
+
+            override fun onFailure(call: Call<List<Coffee>>, t: Throwable) {
+                Log.i(TAG, "On Fail: ${t.message}")
+            }
+        })
+    }
+
 }

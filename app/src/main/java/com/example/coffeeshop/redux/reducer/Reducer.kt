@@ -9,33 +9,32 @@ class Reducer {
         val appReducer: (AppState, Any) -> AppState = { state, action ->
             when (action) {
                 is Action.SetCoffees -> state.copy(coffees = action.coffees)
+                is Action.SetLikeCoffees -> state.copy(likeCoffees = action.likeCoffees)
                 is Action.SetAddress -> state.copy(address = action.address)
                 is Action.SetCategories -> state.copy(categories = action.categories)
                 is Action.SelectCategory -> {
                     Log.d("REDUX_LOGSHIT", "${action.categoryId}")
                     state.copy(selectedCategory = action.categoryId)
                 }
-//                is Action.AddOrder -> {
-//                    val newOrders = state.orders.toMutableList()
-//                    newOrders.add(action.coffee)
-//                    state.copy(orders = newOrders)
-//                }
 
                 is Action.AddOrder -> {
-                    val existingOrder = state.orders.find { it.coffeeId == action.coffee.coffeeId }
-
+                    val existingOrder = state.orders.find {
+                        it.coffeeId == action.coffee.coffeeId && it.size == action.size
+                    }
                     val updatedOrders = if (existingOrder != null) {
                         state.orders.map { coffee ->
-                            if (coffee.coffeeId == action.coffee.coffeeId) {
+                            if (coffee.coffeeId == action.coffee.coffeeId && coffee.size == action.size) {
                                 coffee.copy(quantity = coffee.quantity + action.quantity)
-                            } else coffee
+                            } else {
+                                coffee
+                            }
                         }
                     } else {
-                        state.orders + action.coffee.copy(quantity = action.quantity)
+                        state.orders + action.coffee.copy(quantity = action.quantity, size = action.size, coffeeCost = action.coffee.coffeeCost)
                     }
-
                     state.copy(orders = ArrayList(updatedOrders))
                 }
+
 
 
                 is Action.SaveUser -> state.copy(user = action.user)
@@ -46,7 +45,7 @@ class Reducer {
 
                 is Action.IncreaseOrderQuantity -> {
                     val updatedOrders = state.orders.map { coffee ->
-                        if (coffee.coffeeId == action.coffeeId) {
+                        if (coffee.coffeeId == action.coffeeId && coffee.size == action.size) {
                             coffee.copy(quantity = coffee.quantity + 1)  // Tăng số lượng
                         } else coffee
                     }
@@ -56,9 +55,9 @@ class Reducer {
                 is Action.DecreaseOrderQuantity -> {
                     val updatedOrders = state.orders.mapNotNull { coffee ->
                         when {
-                            coffee.coffeeId == action.coffeeId && coffee.quantity > 1 ->
+                            coffee.coffeeId == action.coffeeId && coffee.size == action.size && coffee.quantity > 1 ->
                                 coffee.copy(quantity = coffee.quantity - 1)
-                            coffee.coffeeId == action.coffeeId && coffee.quantity == 1 ->
+                            coffee.coffeeId == action.coffeeId && coffee.size == action.size && coffee.quantity == 1 ->
                                 null
                             else -> coffee
                         }

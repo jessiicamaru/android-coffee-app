@@ -65,24 +65,36 @@ class CoffeeItemAdapter(private val coffeeList: ArrayList<Coffee>, private val c
                 putExtra("coffeeCost", currentItem.coffeeCost)
                 putExtra("coffeeDescription", currentItem.coffeeDescription)
                 putExtra("categoryTitle", currentItem.categoryTitle)
+                putExtra("categoryId", currentItem.categoryId)
             }
             context.startActivity(intent)
         }
 
         holder.addButton.setOnClickListener {
-            store.dispatch(
-                Action.AddOrder(
-                    Coffee(
-                        coffeeId = currentItem.coffeeId,
-                        coffeeTitle = currentItem.coffeeTitle,
-                        coffeePhotoUrl = currentItem.coffeePhotoUrl,
-                        coffeeCost = currentItem.coffeeCost,
-                        coffeeDescription = currentItem.coffeeDescription,
-                        categoryTitle = currentItem.categoryTitle,
-                        categoryId = currentItem.categoryId,
-                    ),
-                )
-            )
+//            store.dispatch(
+//                Action.AddOrder(
+//                    Coffee(
+//                        coffeeId = currentItem.coffeeId,
+//                        coffeeTitle = currentItem.coffeeTitle,
+//                        coffeePhotoUrl = currentItem.coffeePhotoUrl,
+//                        coffeeCost = currentItem.coffeeCost,
+//                        coffeeDescription = currentItem.coffeeDescription,
+//                        categoryTitle = currentItem.categoryTitle,
+//                        categoryId = currentItem.categoryId,
+//                    ),
+//                )
+//            )
+
+            val intent = Intent(context, Detail::class.java).apply {
+                putExtra("coffeeId", currentItem.coffeeId)
+                putExtra("coffeeTitle", currentItem.coffeeTitle)
+                putExtra("coffeePhotoUrl", currentItem.coffeePhotoUrl)
+                putExtra("coffeeCost", currentItem.coffeeCost)
+                putExtra("coffeeDescription", currentItem.coffeeDescription)
+                putExtra("categoryTitle", currentItem.categoryTitle)
+                putExtra("categoryId", currentItem.categoryId)
+            }
+            context.startActivity(intent)
         }
     }
 }
