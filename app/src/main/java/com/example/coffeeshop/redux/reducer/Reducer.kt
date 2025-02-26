@@ -35,12 +35,14 @@ class Reducer {
                     state.copy(orders = ArrayList(updatedOrders))
                 }
 
-
-
                 is Action.SaveUser -> state.copy(user = action.user)
                 is Action.RefreshOrders -> state.copy(orders = ArrayList(state.orders))
                 is Action.RemoveOrder -> {
                     state.copy(orders = ArrayList(state.orders.filterNot { it == action.coffee }))
+                }
+
+                is Action.RemoveLikeCoffee -> {
+                    state.copy(likeCoffees = ArrayList(state.likeCoffees.filterNot { it.coffeeId == action.likeCoffee.coffeeId }))
                 }
 
                 is Action.IncreaseOrderQuantity -> {

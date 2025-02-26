@@ -17,11 +17,17 @@ import com.example.coffeeshop.data_class.Coffee
 import com.example.coffeeshop.data_class.CoffeeCart
 import com.example.coffeeshop.redux.action.Action
 import com.example.coffeeshop.redux.store.Store
+import com.example.coffeeshop.service.Service
 
-class CoffeeItemLikeAdapter(private val coffeeList: ArrayList<Coffee>, private val context: Context) :
+class CoffeeItemLikeAdapter(
+    private val coffeeList: ArrayList<Coffee>,
+    private val context: Context
+) :
     RecyclerView.Adapter<CoffeeItemLikeAdapter.CoffeeItemViewHolder>() {
 
     private val store = Store.store;
+    private val service = Service();
+
 
     class CoffeeItemViewHolder(itemView: View) : RecyclerView.ViewHolder(itemView) {
         val coffeeImage: ImageView = itemView.findViewById(R.id.coffee_image)
@@ -46,12 +52,11 @@ class CoffeeItemLikeAdapter(private val coffeeList: ArrayList<Coffee>, private v
         val currentItem = coffeeList[position]
 
         Glide.with(holder.itemView.context)
-            .load(currentItem.coffeePhotoUrl) // URL ảnh
-            .placeholder(R.drawable.caffe_mocha) // Ảnh placeholder khi đang tải
-            .error(R.drawable.caffe_mocha) // Ảnh hiển thị nếu tải ảnh thất bại
-            .into(holder.coffeeImage) // ImageView cần hiển thị ảnh
+            .load(currentItem.coffeePhotoUrl)
+            .placeholder(R.drawable.caffe_mocha)
+            .error(R.drawable.caffe_mocha)
+            .into(holder.coffeeImage)
 
-        // Gán dữ liệu khác
         holder.coffeeTitle.text = currentItem.coffeeTitle
         holder.categoryTitle.text = currentItem.categoryTitle
 
@@ -68,6 +73,24 @@ class CoffeeItemLikeAdapter(private val coffeeList: ArrayList<Coffee>, private v
             context.startActivity(intent)
         }
 
+        holder.removeButton.setOnClickListener {
+            store.state.user?.let {
+                it1 -> service.deleteLikeCoffee(currentItem.coffeeId, it1.uid)
+            }
+            store.dispatch(
+                Action.RemoveLikeCoffee(
+                    Coffee(
+                        coffeeId = currentItem.coffeeId,
+                        coffeeTitle = currentItem.coffeeTitle,
+                        coffeePhotoUrl = currentItem.coffeePhotoUrl,
+                        coffeeCost = currentItem.coffeeCost,
+                        coffeeDescription = currentItem.coffeeDescription,
+                        categoryTitle = currentItem.categoryTitle,
+                        categoryId = currentItem.categoryId,
+                    )
+                )
+            )
+        }
 
     }
 }

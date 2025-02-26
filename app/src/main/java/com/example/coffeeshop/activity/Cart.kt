@@ -5,6 +5,7 @@ import android.app.Activity
 import android.content.Intent
 import android.os.Bundle
 import android.util.Log
+import android.widget.Button
 import android.widget.LinearLayout
 import android.widget.TextView
 import androidx.recyclerview.widget.GridLayoutManager
@@ -19,8 +20,9 @@ import com.example.coffeeshop.redux.data_class.AppState
 import com.example.coffeeshop.redux.store.Store
 
 class Cart : Activity() {
-    private lateinit var homeButton: LinearLayout;
+    private lateinit var homeButton: LinearLayout
     private lateinit var heartButton: LinearLayout
+    private lateinit var buyNow: Button
 
     private lateinit var coffeeRecyclerView: RecyclerView
 
@@ -40,6 +42,12 @@ class Cart : Activity() {
 
         heartButton = findViewById(R.id.heartButton)
         heartButton.setOnClickListener {
+            val intent = Intent(this, Like::class.java)
+            startActivity(intent)
+        }
+
+        buyNow = findViewById(R.id.buy_now)
+        buyNow.setOnClickListener {
             val intent = Intent(this, Like::class.java)
             startActivity(intent)
         }

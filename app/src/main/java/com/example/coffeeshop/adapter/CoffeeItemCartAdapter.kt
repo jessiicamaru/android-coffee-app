@@ -16,6 +16,7 @@ import com.example.coffeeshop.activity.Detail
 import com.example.coffeeshop.data_class.Coffee
 import com.example.coffeeshop.redux.action.Action
 import com.example.coffeeshop.redux.store.Store
+import com.example.coffeeshop.service.Service
 
 class CoffeeItemCartAdapter(
     private val coffeeList: ArrayList<Coffee>,
@@ -30,7 +31,6 @@ class CoffeeItemCartAdapter(
         val coffeeTitle: TextView = itemView.findViewById(R.id.coffee_title)
         val categoryTitle: TextView = itemView.findViewById(R.id.category_title)
         val coffeeCost: TextView = itemView.findViewById(R.id.coffee_cost)
-//        val removeButton: Button = itemView.findViewById(R.id.remove_button)
         val increaseButton: Button = itemView.findViewById(R.id.increase_button)
         val decreaseButton: Button = itemView.findViewById(R.id.decrease_button)
         val quantity: TextView = itemView.findViewById(R.id.quantity)
@@ -53,10 +53,10 @@ class CoffeeItemCartAdapter(
         val currentItem = coffeeList[position]
 
         Glide.with(holder.itemView.context)
-            .load(currentItem.coffeePhotoUrl) // URL ảnh
-            .placeholder(R.drawable.caffe_mocha) // Ảnh placeholder khi đang tải
-            .error(R.drawable.caffe_mocha) // Ảnh hiển thị nếu tải ảnh thất bại
-            .into(holder.coffeeImage) // ImageView cần hiển thị ảnh
+            .load(currentItem.coffeePhotoUrl)
+            .placeholder(R.drawable.caffe_mocha)
+            .error(R.drawable.caffe_mocha)
+            .into(holder.coffeeImage)
 
         holder.coffeeTitle.text = currentItem.coffeeTitle
         holder.categoryTitle.text = currentItem.categoryTitle
@@ -77,21 +77,6 @@ class CoffeeItemCartAdapter(
             context.startActivity(intent)
         }
 
-//        holder.removeButton.setOnClickListener {
-//            store.dispatch(
-//                Action.RemoveOrder(
-//                    Coffee(
-//                        coffeeId = currentItem.coffeeId,
-//                        coffeeTitle = currentItem.coffeeTitle,
-//                        coffeePhotoUrl = currentItem.coffeePhotoUrl,
-//                        coffeeCost = currentItem.coffeeCost,
-//                        coffeeDescription = currentItem.coffeeDescription,
-//                        categoryTitle = currentItem.categoryTitle,
-//                        categoryId = currentItem.categoryId,
-//                    )
-//                )
-//            )
-//        }
 
         holder.increaseButton.setOnClickListener {
             store.dispatch(Action.IncreaseOrderQuantity(currentItem.coffeeId, currentItem.size))

@@ -115,6 +115,30 @@ class Service {
         })
     }
 
+    fun deleteLikeCoffee(id: String, uid: String) {
+        val api = Retrofit.Builder()
+            .baseUrl(BASE_URL)
+            .addConverterFactory(GsonConverterFactory.create())
+            .build().create(LikesApi::class.java)
+
+        Log.d("DELETE_FAV", id)
+
+        api.deleteLikeCoffee(id, uid).enqueue(object : Callback<Int> {
+            override fun onResponse(call: Call<Int>, response: Response<Int>) {
+                if (response.isSuccessful) {
+                    Log.d("Retrofit", "Add coffee successfully! Response: ${response.body()}")
+                } else {
+                    Log.e("Retrofit", "Add coffee failed: ${response.errorBody()}")
+                }
+            }
+
+            override fun onFailure(call: Call<Int>, t: Throwable) {
+                Log.e("Retrofit", "Add coffee failed: ${t.message}")
+
+            }
+        })
+    }
+
     fun getLikeCoffees(uid: String) {
         val api = Retrofit.Builder()
             .baseUrl(BASE_URL)

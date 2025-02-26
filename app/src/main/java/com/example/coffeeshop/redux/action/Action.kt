@@ -13,6 +13,7 @@ sealed class Action {
     data class AddOrder(val coffee: Coffee, val quantity: Int = 1, val size: String) : Action()
     data class SaveUser(val user: User) : Action()
     data class RemoveOrder(val coffee: Coffee) : Action()
+    data class RemoveLikeCoffee(val likeCoffee: Coffee) : Action()
     data class IncreaseOrderQuantity(val coffeeId: String, val size: String) : Action()
     data class DecreaseOrderQuantity(val coffeeId: String, val size: String) : Action()
     object RefreshOrders : Action()
