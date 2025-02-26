@@ -95,10 +95,10 @@
             android:id="@+id/buy_now"
             android:layout_width="match_parent"
             android:layout_height="40dp"
+            android:background="@drawable/button_primary"
             android:text="Buy now"
             android:textColor="@color/white"
             android:textSize="16dp"
-            android:background="@drawable/button_primary"
             tools:ignore="MissingConstraints" />
 
     </LinearLayout>
@@ -161,11 +161,9 @@
             android:padding="16dp">
 
             <ImageButton
-                android:layout_width="wrap_content"
-                android:layout_height="wrap_content"
-                android:background="@drawable/active_nav_button"
-                android:padding="8dp"
-                android:src="@drawable/ic_bag" />
+                android:layout_width="32dp"
+                android:layout_height="32dp"
+                android:background="@drawable/ic_bag_active" />
         </LinearLayout>
 
         <LinearLayout

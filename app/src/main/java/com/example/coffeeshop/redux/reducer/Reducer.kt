@@ -9,7 +9,10 @@ class Reducer {
         val appReducer: (AppState, Any) -> AppState = { state, action ->
             when (action) {
                 is Action.SetCoffees -> state.copy(coffees = action.coffees)
-                is Action.SetLikeCoffees -> state.copy(likeCoffees = action.likeCoffees)
+                is Action.SetLikeCoffees -> {
+                    Log.d("SHIT_FAV", "redux: ${action.likeCoffees}")
+                    state.copy(likeCoffees = action.likeCoffees)
+                }
                 is Action.SetAddress -> state.copy(address = action.address)
                 is Action.SetCategories -> state.copy(categories = action.categories)
                 is Action.SelectCategory -> {
@@ -42,7 +45,7 @@ class Reducer {
                 }
 
                 is Action.RemoveLikeCoffee -> {
-                    state.copy(likeCoffees = ArrayList(state.likeCoffees.filterNot { it.coffeeId == action.likeCoffee.coffeeId }))
+                    state.copy(likeCoffees = ArrayList(state.likeCoffees.filterNot { it == action.likeCoffee.coffeeId }))
                 }
 
                 is Action.IncreaseOrderQuantity -> {

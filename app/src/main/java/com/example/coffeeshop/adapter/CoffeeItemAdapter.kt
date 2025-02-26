@@ -14,7 +14,6 @@ import com.bumptech.glide.Glide
 import com.example.coffeeshop.R
 import com.example.coffeeshop.activity.Detail
 import com.example.coffeeshop.data_class.Coffee
-import com.example.coffeeshop.data_class.CoffeeCart
 import com.example.coffeeshop.redux.action.Action
 import com.example.coffeeshop.redux.store.Store
 

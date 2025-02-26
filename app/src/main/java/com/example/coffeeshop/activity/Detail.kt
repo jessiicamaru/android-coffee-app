@@ -18,6 +18,7 @@ import com.example.coffeeshop.R
 import com.example.coffeeshop.data_class.Coffee
 import com.example.coffeeshop.data_class.Likes
 import com.example.coffeeshop.redux.action.Action
+import com.example.coffeeshop.redux.data_class.AppState
 import com.example.coffeeshop.redux.store.Store
 import com.example.coffeeshop.service.Service
 import com.example.coffeeshop.toast.toast
@@ -74,10 +75,15 @@ class Detail : Activity() {
             .error(R.drawable.caffe_mocha)
             .into(coffeeImage)
 
+
+        if (store.state.likeCoffees.find { it == id } != null) {
+            likeButton.setImageResource(R.drawable.ic_heart_active)
+        } else {
+            likeButton.setImageResource(R.drawable.ic_heart)
+        }
+
         likeButton.setOnClickListener {
-            toast(this@Detail) {
-                "Added $title successfully into favourite list"
-            }
+
 
             store.state.user?.let { user ->
                 val like = Likes(
@@ -86,7 +92,30 @@ class Detail : Activity() {
                 )
 
                 Log.d("ADD_LIKE_COFFEE", "${intent.getStringExtra("coffeeId")} + ${user.uid}")
-                service.addLikeCoffee(like)
+
+
+                val templist = store.state.likeCoffees;
+                if (id != null) {
+                    if (templist.find { it == id } != null) {
+                        toast(this@Detail) {
+                            "Remove $title successfully"
+                        }
+                        templist.remove(id)
+                        likeButton.setImageResource(R.drawable.ic_heart)
+                        service.deleteLikeCoffee(like)
+                    } else {
+                        toast(this@Detail) {
+                            "Added $title successfully into favourite list"
+                        }
+                        templist.add(id)
+                        likeButton.setImageResource(R.drawable.ic_heart_active)
+                        service.addLikeCoffee(like)
+                    }
+                }
+
+                store.dispatch(Action.SetLikeCoffees(templist))
+
+
             }
         }
 
@@ -103,10 +132,12 @@ class Detail : Activity() {
                         displayCost = String.format("%.2f", cost * 0.8).toDouble()
                         coffeeCost.text = "$ $displayCost"
                     }
+
                     "L" -> {
                         displayCost = String.format("%.2f", cost * 1.3).toDouble()
                         coffeeCost.text = "$ $displayCost"
                     }
+
                     "M" -> {
                         displayCost = cost
                         coffeeCost.text = "$ $displayCost"

@@ -1,7 +1,6 @@
 package com.example.coffeeshop.api_interface
 
 import com.example.coffeeshop.data_class.Coffee
-import com.example.coffeeshop.data_class.CoffeeCart
 import com.example.coffeeshop.data_class.Likes
 import retrofit2.Call
 import retrofit2.http.Body
@@ -16,7 +15,7 @@ interface LikesApi {
     fun addLikeCoffee(@Body likes: Likes): Call<Int>
 
     @GET("like-by-uid")
-    fun getLikeCoffees(@Query("uid") uid: String): Call<List<Coffee>>
+    fun getLikeCoffees(@Query("uid") uid: String): Call<List<String>>
 
     @DELETE("delete-by-coffee-id/{id}/{uid}")
     fun deleteLikeCoffee(@Path("id") id: String, @Path("uid") uid: String): Call<Int>

@@ -68,7 +68,9 @@ class Like : Activity() {
     private fun updateUI(state: AppState) {
         Log.d("UPDATE_UI", "FAV: ${state.likeCoffees}")
 
-        coffeeRecyclerView.adapter = CoffeeItemLikeAdapter(ArrayList(state.likeCoffees), this)
+        val list = state.coffees.filter { coffee ->  state.likeCoffees.find { it == coffee.coffeeId } != null}
+
+        coffeeRecyclerView.adapter = CoffeeItemLikeAdapter(ArrayList(list), this)
 
     }
 

@@ -8,7 +8,7 @@ sealed class Action {
     data class SetAddress(val address: String?) : Action()
     data class SetCoffees(val coffees: ArrayList<Coffee>) : Action()
     data class SetCategories(val categories: ArrayList<Category>) : Action()
-    data class SetLikeCoffees(val likeCoffees: ArrayList<Coffee>) : Action()
+    data class SetLikeCoffees(val likeCoffees: ArrayList<String>) : Action()
     data class SelectCategory(val categoryId: String?) : Action()
     data class AddOrder(val coffee: Coffee, val quantity: Int = 1, val size: String) : Action()
     data class SaveUser(val user: User) : Action()

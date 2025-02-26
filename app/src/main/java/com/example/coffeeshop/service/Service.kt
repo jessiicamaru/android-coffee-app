@@ -115,15 +115,13 @@ class Service {
         })
     }
 
-    fun deleteLikeCoffee(id: String, uid: String) {
+    fun deleteLikeCoffee(likes: Likes) {
         val api = Retrofit.Builder()
             .baseUrl(BASE_URL)
             .addConverterFactory(GsonConverterFactory.create())
             .build().create(LikesApi::class.java)
 
-        Log.d("DELETE_FAV", id)
-
-        api.deleteLikeCoffee(id, uid).enqueue(object : Callback<Int> {
+        api.deleteLikeCoffee(likes.coffeeId, likes.uid).enqueue(object : Callback<Int> {
             override fun onResponse(call: Call<Int>, response: Response<Int>) {
                 if (response.isSuccessful) {
                     Log.d("Retrofit", "Add coffee successfully! Response: ${response.body()}")
@@ -147,20 +145,21 @@ class Service {
 
         Log.d("SHIT_FAV", uid)
 
-        api.getLikeCoffees(uid).enqueue(object : Callback<List<Coffee>> {
+        api.getLikeCoffees(uid).enqueue(object : Callback<List<String>> {
             override fun onResponse(
-                call: Call<List<Coffee>>,
-                response: Response<List<Coffee>>
+                call: Call<List<String>>,
+                response: Response<List<String>>
             ) {
                 if (response.isSuccessful) {
                     response.body()?.let {
-                        store.dispatch(Action.SetLikeCoffees(ArrayList(it)))
                         Log.d("SHIT_FAV", "$it")
+
+                        store.dispatch(Action.SetLikeCoffees(ArrayList(it)))
                     }
                 }
             }
 
-            override fun onFailure(call: Call<List<Coffee>>, t: Throwable) {
+            override fun onFailure(call: Call<List<String>>, t: Throwable) {
                 Log.i(TAG, "On Fail: ${t.message}")
             }
         })

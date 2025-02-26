@@ -60,7 +60,7 @@ class Home : Activity() {
 
         service.getAllCoffees()
         service.getAllCategories()
-
+        store.state.user?.let { service.getLikeCoffees(it.uid) }
 
         bagButton = findViewById(R.id.bagButton)
         bagButton.setOnClickListener {
