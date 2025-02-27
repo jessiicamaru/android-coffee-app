@@ -18,6 +18,7 @@ import com.example.coffeeshop.adapter.CoffeeItemCartAdapter
 import com.example.coffeeshop.redux.action.Action
 import com.example.coffeeshop.redux.data_class.AppState
 import com.example.coffeeshop.redux.store.Store
+import com.example.coffeeshop.toast.toast
 
 class Cart : Activity() {
     private lateinit var homeButton: LinearLayout
@@ -50,8 +51,15 @@ class Cart : Activity() {
 
         buyNow = findViewById(R.id.buy_now)
         buyNow.setOnClickListener {
-            val intent = Intent(this, Like::class.java)
-            startActivity(intent)
+            if (store.state.orders.isEmpty()) {
+                toast(this@Cart) {
+                    "Your cart is empty"
+                }
+            } else {
+                val intent = Intent(this, OnOrder::class.java)
+                startActivity(intent)
+            }
+
         }
 
 
