@@ -34,6 +34,8 @@ class Like : Activity() {
         super.onCreate(savedInstanceState)
         setContentView(R.layout.like)
 
+        store.dispatch(Action.AddHistory(this))
+
         homeButton = findViewById(R.id.homeButton);
         homeButton.setOnClickListener {
             val intent = Intent(this, Home::class.java)

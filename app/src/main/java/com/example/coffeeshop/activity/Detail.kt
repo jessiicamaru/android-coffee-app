@@ -42,6 +42,8 @@ class Detail : Activity() {
         super.onCreate(savedInstanceState)
         setContentView(R.layout.detail)
 
+        store.dispatch(Action.AddHistory(this))
+
         coffeeImage = findViewById(R.id.coffee_image)
         coffeeTitle = findViewById(R.id.coffee_title)
         categoryTitle = findViewById(R.id.category_title)
@@ -52,7 +54,8 @@ class Detail : Activity() {
 
         val returnButton: ImageButton = findViewById(R.id.return_button)
         returnButton.setOnClickListener {
-            val intent = Intent(this, Home::class.java)
+            store.dispatch(Action.RemoveHistory)
+            val intent = Intent(this, store.state.historyList.last()::class.java)
             startActivity(intent)
         }
 
@@ -83,8 +86,6 @@ class Detail : Activity() {
         }
 
         likeButton.setOnClickListener {
-
-
             store.state.user?.let { user ->
                 val like = Likes(
                     uid = user.uid,
@@ -114,8 +115,6 @@ class Detail : Activity() {
                 }
 
                 store.dispatch(Action.SetLikeCoffees(templist))
-
-
             }
         }
 

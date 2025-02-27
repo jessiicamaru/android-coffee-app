@@ -69,6 +69,21 @@ class Reducer {
                     }
                     state.copy(orders = ArrayList(updatedOrders))
                 }
+
+                is Action.AddHistory -> {
+                    val updateHistory = state.historyList;
+                    updateHistory.add(action.history)
+
+                    state.copy(historyList = ArrayList(updateHistory))
+                }
+
+                is Action.RemoveHistory -> {
+                    val updateHistory = state.historyList;
+                    updateHistory.removeAt(updateHistory.size - 1)
+
+                    state.copy(historyList = ArrayList(updateHistory))
+                }
+
                 else -> state
             }
         }

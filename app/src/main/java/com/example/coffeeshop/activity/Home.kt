@@ -4,6 +4,9 @@ import android.annotation.SuppressLint
 import android.app.Activity
 import android.content.Intent
 import android.os.Bundle
+import android.text.Editable
+import android.text.TextWatcher
+import android.widget.EditText
 import android.widget.LinearLayout
 import android.widget.TextView
 import androidx.recyclerview.widget.GridLayoutManager
@@ -13,6 +16,7 @@ import com.example.coffeeshop.R
 import com.example.coffeeshop.adapter.CategoryItemAdapter
 import com.example.coffeeshop.adapter.CoffeeItemAdapter
 import com.example.coffeeshop.decoration.ItemMarginRight
+import com.example.coffeeshop.redux.action.Action
 import com.example.coffeeshop.redux.data_class.AppState
 import com.example.coffeeshop.redux.store.Store
 import com.example.coffeeshop.service.Service
@@ -20,11 +24,9 @@ import com.example.coffeeshop.service.Service
 class Home : Activity() {
 
     private lateinit var locationText: TextView
-
     private lateinit var coffeeRecyclerView: RecyclerView
-
     private lateinit var categoryRecyclerView: RecyclerView
-
+    private lateinit var searchInput: EditText
     private lateinit var bagButton: LinearLayout;
     private lateinit var heartButton: LinearLayout
 
@@ -35,6 +37,8 @@ class Home : Activity() {
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
         setContentView(R.layout.home)
+
+        store.dispatch(Action.AddHistory(this))
 
         locationText = findViewById(R.id.location) // Lấy view TextView để hiển thị địa chỉ
 
@@ -57,6 +61,16 @@ class Home : Activity() {
             layoutManager.scrollToPosition(scrollPosition)
         }
 
+        searchInput = findViewById(R.id.inputCoffee)
+        searchInput.addTextChangedListener(object : TextWatcher {
+            override fun afterTextChanged(s: Editable?) {
+                updateUI(store.state, s.toString())
+            }
+
+            override fun beforeTextChanged(s: CharSequence?, start: Int, count: Int, after: Int) {}
+
+            override fun onTextChanged(s: CharSequence?, start: Int, before: Int, count: Int) {}
+        })
 
         service.getAllCoffees()
         service.getAllCategories()
@@ -77,18 +91,25 @@ class Home : Activity() {
     }
 
 
-    private fun updateUI(state: AppState) {
+    private fun updateUI(state: AppState, searchQuery: String = "") {
         // Cập nhật UI dựa trên state hiện tại
         coffeeRecyclerView.adapter = CoffeeItemAdapter(state.coffees, this)
         categoryRecyclerView.adapter = CategoryItemAdapter(state.categories)
 
         locationText.text = store.state.address
 
-        val filteredCoffees = if (state.selectedCategory == "all") {
-            state.coffees // Hiển thị toàn bộ cà phê
+        val filteredByCategory = if (state.selectedCategory == "all") {
+            state.coffees
         } else {
             state.coffees.filter { it.categoryId == state.selectedCategory }
         }
+
+        val filteredCoffees = if (searchQuery.isNotBlank()) {
+            filteredByCategory.filter { it.coffeeTitle.contains(searchQuery, ignoreCase = true) }
+        } else {
+            filteredByCategory
+        }
+
         coffeeRecyclerView.adapter = CoffeeItemAdapter(ArrayList(filteredCoffees), this)
     }
 }

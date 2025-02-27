@@ -57,6 +57,7 @@
                 android:background="@drawable/only_rounded"
                 android:backgroundTint="#2A2A2A"
                 android:hint="Search coffee"
+                android:textColor="@color/white"
                 android:inputType="text"
                 android:padding="16sp"
                 android:textColorHint="#A2A2A2"

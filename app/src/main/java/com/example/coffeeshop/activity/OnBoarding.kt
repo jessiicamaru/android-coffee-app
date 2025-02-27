@@ -29,17 +29,14 @@ class OnBoarding : Activity(), LocationListener {
         locationManager =
             getSystemService(LOCATION_SERVICE) as LocationManager // Khởi tạo LocationManager
 
-        // Kiểm tra và yêu cầu quyền truy cập vị trí
         if (checkSelfPermission(android.Manifest.permission.ACCESS_FINE_LOCATION) == PackageManager.PERMISSION_GRANTED) {
-            // Đăng ký LocationListener để nhận cập nhật vị trí
             locationManager.requestLocationUpdates(
                 LocationManager.GPS_PROVIDER,
-                5000L, // Interval thời gian (ms)
-                10f,   // Interval khoảng cách (m)
-                this   // LocationListener
+                5000L,
+                10f,
+                this
             )
         } else {
-            // Nếu chưa cấp quyền, yêu cầu quyền vị trí tại runtime
             ActivityCompat.requestPermissions(
                 this,
                 arrayOf(android.Manifest.permission.ACCESS_FINE_LOCATION),
@@ -68,7 +65,6 @@ class OnBoarding : Activity(), LocationListener {
     }
 
     override fun onLocationChanged(location: Location) {
-        // Hiển thị tọa độ khi vị trí thay đổi
         Toast.makeText(
             this,
             "Location: ${location.latitude}, ${location.longitude}",
@@ -79,7 +75,6 @@ class OnBoarding : Activity(), LocationListener {
             val geocoder = Geocoder(this, Locale.getDefault())
             val addresses = geocoder.getFromLocation(location.latitude, location.longitude, 1)
 
-            // Nếu có kết quả, hiển thị địa chỉ
             if (addresses != null && addresses.isNotEmpty()) {
                 val address = addresses[0]?.getAddressLine(0)
                 store.dispatch(Action.SetAddress(address))
