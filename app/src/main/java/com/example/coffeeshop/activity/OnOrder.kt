@@ -5,6 +5,7 @@ import android.app.Activity
 import android.content.Intent
 import android.os.Bundle
 import android.util.Log
+import android.widget.Button
 import android.widget.ImageButton
 import android.widget.RadioButton
 import android.widget.RadioGroup
@@ -23,7 +24,8 @@ class OnOrder : Activity() {
     private lateinit var coffeeRecyclerView: RecyclerView
     private lateinit var totalAmount: TextView
     private lateinit var name: TextView
-    private lateinit var adress: TextView
+    private lateinit var address: TextView
+    private lateinit var orderButton: Button
 
     private val service = Service();
     private val store = Store.store
@@ -50,7 +52,13 @@ class OnOrder : Activity() {
 
         totalAmount = findViewById(R.id.total_amount)
         name = findViewById(R.id.name)
-        adress = findViewById(R.id.adress)
+        address = findViewById(R.id.adress)
+        orderButton = findViewById(R.id.order)
+        orderButton.setOnClickListener{
+            val intent = Intent(this, Map::class.java)
+            startActivity(intent)
+        }
+
 
         val radioGroup = findViewById<RadioGroup>(R.id.delivery_group)
         radioGroup.setOnCheckedChangeListener { group, checkedId ->
@@ -85,7 +93,7 @@ class OnOrder : Activity() {
 
         totalAmount.text = "Total: ${String.format("%.2f", totalMoney).toDouble()}$"
         name.text = if (state.user?.displayName != null) state.user.displayName else "Jl. Kpg Sutoyo";
-        adress.text = state.address ?: "Kpg. Sutoyo No. 620, Bilzen, Tanjungbalai."
+        address.text = state.address ?: "Kpg. Sutoyo No. 620, Bilzen, Tanjungbalai."
 
         coffeeRecyclerView.adapter = CoffeeItemOrderAdapter(ArrayList(state.orders), this)
     }

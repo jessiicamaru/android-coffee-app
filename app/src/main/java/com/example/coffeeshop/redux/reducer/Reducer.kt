@@ -37,7 +37,7 @@ class Reducer {
                     }
                     state.copy(orders = ArrayList(updatedOrders))
                 }
-
+                is Action.SetLocation -> state.copy(location = action.location)
                 is Action.SaveUser -> state.copy(user = action.user)
                 is Action.RefreshOrders -> state.copy(orders = ArrayList(state.orders))
                 is Action.RemoveOrder -> {

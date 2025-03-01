@@ -3,6 +3,7 @@ package com.example.coffeeshop.redux.action
 import android.app.Activity
 import com.example.coffeeshop.data_class.Category
 import com.example.coffeeshop.data_class.Coffee
+import com.example.coffeeshop.data_class.LocationData
 import com.example.coffeeshop.data_class.User
 
 sealed class Action {
@@ -18,6 +19,7 @@ sealed class Action {
     data class IncreaseOrderQuantity(val coffeeId: String, val size: String) : Action()
     data class DecreaseOrderQuantity(val coffeeId: String, val size: String) : Action()
     data class AddHistory(val history: Activity) : Action()
+    data class SetLocation(val location: LocationData) : Action()
     data object RemoveHistory : Action()
     data object RefreshOrders : Action()
 }

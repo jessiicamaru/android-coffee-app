@@ -40,12 +40,19 @@ android {
     buildFeatures {
         compose = true
     }
+    buildFeatures {
+        buildConfig = true
+    }
 }
 
 dependencies {
     //noinspection GradleDynamicVersion
+    implementation("com.google.android.material:material:1.10.0")
+    implementation("org.maplibre.gl:android-sdk:11.8.0")
     implementation("com.android.support:cardview-v7:27.+")
     implementation("org.reduxkotlin:redux-kotlin:0.5.5")
+    implementation("org.maplibre.gl:maplibre-android-gestures:0.0.3")
+    implementation("com.github.MKergall:osmbonuspack:6.9.0")
     implementation(libs.play.services.auth.v2070)
     implementation(libs.google.firebase.auth.ktx)
     implementation(libs.googleid)

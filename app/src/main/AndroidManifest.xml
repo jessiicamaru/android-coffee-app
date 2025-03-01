@@ -65,6 +65,11 @@
             android:label="@string/app_name"
             android:theme="@style/Theme.CoffeeShop" />
 
+        <activity
+            android:name=".activity.Map"
+            android:theme="@style/Theme.AppCompat.Light.NoActionBar" />
+
+
     </application>
 
 </manifest>

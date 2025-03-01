@@ -13,10 +13,10 @@ import android.widget.Button
 import android.widget.Toast
 import androidx.core.app.ActivityCompat
 import com.example.coffeeshop.R
+import com.example.coffeeshop.data_class.LocationData
 import com.example.coffeeshop.redux.action.Action
 import com.example.coffeeshop.redux.store.Store
 import java.util.Locale
-
 
 class OnBoarding : Activity(), LocationListener {
     private lateinit var locationManager: LocationManager
@@ -78,6 +78,13 @@ class OnBoarding : Activity(), LocationListener {
             if (addresses != null && addresses.isNotEmpty()) {
                 val address = addresses[0]?.getAddressLine(0)
                 store.dispatch(Action.SetAddress(address))
+                store.dispatch(
+                    Action.SetLocation(
+                        LocationData(
+                            longitude = location.longitude, latitude = location.latitude
+                        )
+                    )
+                )
             }
         } catch (e: Exception) {
             e.printStackTrace()

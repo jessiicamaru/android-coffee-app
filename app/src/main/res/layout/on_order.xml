@@ -494,7 +494,7 @@
 
     <Button
         app:layout_constraintTop_toBottomOf="@id/scroll_view"
-        android:id="@+id/buy_now"
+        android:id="@+id/order"
         android:layout_marginTop="16dp"
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
