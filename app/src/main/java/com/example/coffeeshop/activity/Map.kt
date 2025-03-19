@@ -48,10 +48,6 @@ class Map : AppCompatActivity(), OnMapReadyCallback {
 
         // Init the MapView
         mapView = findViewById(R.id.map_view)
-//        mapView.getMapAsync { map ->
-//            map.setStyle(styleUrl)
-//            map.cameraPosition = CameraPosition.Builder().target(LatLng(0.0,0.0)).zoom(1.0).build()
-//        }
         mapView.getMapAsync(this)
     }
 

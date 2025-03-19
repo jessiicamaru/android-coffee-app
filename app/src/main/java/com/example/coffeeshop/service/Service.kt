@@ -4,10 +4,12 @@ import android.util.Log
 import com.example.coffeeshop.api_interface.CategoryApi
 import com.example.coffeeshop.api_interface.CoffeeApi
 import com.example.coffeeshop.api_interface.LikesApi
+import com.example.coffeeshop.api_interface.OrderApi
 import com.example.coffeeshop.api_interface.UserApi
 import com.example.coffeeshop.data_class.Category
 import com.example.coffeeshop.data_class.Coffee
 import com.example.coffeeshop.data_class.Likes
+import com.example.coffeeshop.data_class.OrderRequest
 import com.example.coffeeshop.data_class.User
 import com.example.coffeeshop.redux.action.Action
 import com.example.coffeeshop.redux.store.Store
@@ -161,6 +163,28 @@ class Service {
 
             override fun onFailure(call: Call<List<String>>, t: Throwable) {
                 Log.i(TAG, "On Fail: ${t.message}")
+            }
+        })
+    }
+
+    fun createOrder(orderRequest: OrderRequest) {
+        val api = Retrofit.Builder()
+            .baseUrl(BASE_URL)
+            .addConverterFactory(GsonConverterFactory.create())
+            .build().create(OrderApi::class.java)
+
+        api.createOrder(orderRequest).enqueue(object : Callback<Int> {
+            override fun onResponse(call: Call<Int>, response: Response<Int>) {
+                if (response.isSuccessful) {
+                    Log.d("Retrofit", "create order successfully! Response: ${response.body()}")
+                } else {
+                    Log.e("Retrofit", "create order failed: ${response.errorBody()}")
+                }
+            }
+
+            override fun onFailure(call: Call<Int>, t: Throwable) {
+                Log.e("Retrofit", "create order failed: ${t.message}")
+
             }
         })
     }
