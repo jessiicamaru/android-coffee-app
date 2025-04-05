@@ -54,9 +54,19 @@ class Detail : Activity() {
 
         val returnButton: ImageButton = findViewById(R.id.return_button)
         returnButton.setOnClickListener {
-            store.dispatch(Action.RemoveHistory)
-            val intent = Intent(this, store.state.historyList.last()::class.java)
-            startActivity(intent)
+            val orderId = intent.getStringExtra("orderId")
+
+            if (orderId != null) {
+                store.dispatch(Action.RemoveHistory)
+                val intent = Intent(this, OrderDetail::class.java).apply {
+                    putExtra("orderId", orderId)
+                }
+                startActivity(intent)
+            } else {
+                store.dispatch(Action.RemoveHistory)
+                val intent = Intent(this, store.state.historyList.last()::class.java)
+                startActivity(intent)
+            }
         }
 
         val title = intent.getStringExtra("coffeeTitle")

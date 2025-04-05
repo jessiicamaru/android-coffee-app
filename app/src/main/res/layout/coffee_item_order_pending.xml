@@ -1,0 +1,82 @@
+<?xml version="1.0" encoding="utf-8"?>
+<androidx.constraintlayout.widget.ConstraintLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:app="http://schemas.android.com/apk/res-auto"
+    xmlns:tools="http://schemas.android.com/tools"
+    android:layout_width="match_parent"
+    android:layout_height="wrap_content">
+
+    <androidx.constraintlayout.widget.ConstraintLayout
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:layout_columnWeight="1"
+        android:background="@drawable/only_rounded"
+        android:backgroundTint="@color/white"
+        android:padding="8dp"
+        android:layout_marginBottom="8dp"
+        tools:ignore="MissingConstraints">
+
+        <GridLayout
+            android:id="@+id/myGrid"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:columnCount="2"
+            android:rowCount="1">
+
+            <android.support.v7.widget.CardView xmlns:app="http://schemas.android.com/apk/res-auto"
+                android:layout_width="60dp"
+                android:layout_height="54dp"
+                android:layout_marginEnd="16dp"
+                android:layout_rowWeight="1"
+                app:cardCornerRadius="10dp">
+
+                <ImageView
+                    android:id="@+id/coffee_image"
+                    android:layout_width="match_parent"
+                    android:layout_height="match_parent"
+                    android:scaleType="centerCrop"
+                    android:src="@drawable/caffe_mocha"/>
+
+            </android.support.v7.widget.CardView>
+
+
+            <LinearLayout
+                android:id="@+id/remove_button"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:layout_columnWeight="9"
+                android:layout_rowWeight="1"
+                android:orientation="vertical"
+                android:gravity="center"
+                app:layout_constraintBottom_toBottomOf="parent">
+
+                <TextView
+                    android:id="@+id/coffee_title"
+                    android:layout_width="match_parent"
+                    android:layout_height="wrap_content"
+                    android:fontFamily="@font/sora_extrabold"
+                    android:text="Caffe Mocha"
+                    android:textColor="#242424"
+                    android:textSize="16sp" />
+
+                <TextView
+                    android:id="@+id/category_title"
+                    android:layout_width="match_parent"
+                    android:layout_height="wrap_content"
+                    android:fontFamily="@font/sora_light"
+                    android:text="Deep foam"
+                    android:textColor="#A2A2A2"
+                    android:textSize="12sp" />
+
+                <TextView
+                    android:id="@+id/size"
+                    android:layout_width="match_parent"
+                    android:layout_height="wrap_content"
+                    android:text="Size: M"
+                    android:textColor="#000"
+                    android:textSize="14dp"/>
+            </LinearLayout>
+        </GridLayout>
+
+    </androidx.constraintlayout.widget.ConstraintLayout>
+
+</androidx.constraintlayout.widget.ConstraintLayout>

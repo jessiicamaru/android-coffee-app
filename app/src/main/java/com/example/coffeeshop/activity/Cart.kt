@@ -19,11 +19,12 @@ import com.example.coffeeshop.redux.action.Action
 import com.example.coffeeshop.redux.data_class.AppState
 import com.example.coffeeshop.redux.store.Store
 import com.example.coffeeshop.toast.toast
+import com.google.android.material.bottomnavigation.BottomNavigationView
 
 class Cart : Activity() {
-    private lateinit var homeButton: LinearLayout
-    private lateinit var heartButton: LinearLayout
     private lateinit var buyNow: Button
+
+    private lateinit var bottomNavigationView: BottomNavigationView
 
     private lateinit var coffeeRecyclerView: RecyclerView
 
@@ -36,18 +37,6 @@ class Cart : Activity() {
         setContentView(R.layout.cart)
 
         store.dispatch(Action.AddHistory(this))
-
-        homeButton = findViewById(R.id.homeButton);
-        homeButton.setOnClickListener {
-            val intent = Intent(this, Home::class.java)
-            startActivity(intent)
-        }
-
-        heartButton = findViewById(R.id.heartButton)
-        heartButton.setOnClickListener {
-            val intent = Intent(this, Like::class.java)
-            startActivity(intent)
-        }
 
         buyNow = findViewById(R.id.buy_now)
         buyNow.setOnClickListener {
@@ -76,6 +65,30 @@ class Cart : Activity() {
         }
 
         store.dispatch(Action.RefreshOrders)
+
+        bottomNavigationView = findViewById(R.id.navigation)
+        bottomNavigationView.selectedItemId = R.id.nav_cart
+        bottomNavigationView.setOnItemSelectedListener { item ->
+            when (item.itemId) {
+                R.id.nav_home -> {
+                    startActivity(Intent(this, Home::class.java))
+                    overridePendingTransition(0, 0) // Tắt animation chuyển trang
+                    return@setOnItemSelectedListener true
+                }
+                R.id.nav_cart -> return@setOnItemSelectedListener true
+                R.id.nav_fav -> {
+                    startActivity(Intent(this, Like::class.java))
+                    overridePendingTransition(0, 0)
+                    return@setOnItemSelectedListener true
+                }
+                R.id.nav_pending -> {
+                    startActivity(Intent(this, Order::class.java))
+                    overridePendingTransition(0, 0)
+                    return@setOnItemSelectedListener true
+                }
+                else -> false
+            }
+        }
 
     }
 

@@ -79,6 +79,7 @@ class Login : Activity() {
 
     private fun firebaseAuthWithGoogle(idToken: String) {
         val credential = GoogleAuthProvider.getCredential(idToken, null)
+        Log.d("GOOGLE_SIGNIN", "Credential: $credential")
         mAuth.signInWithCredential(credential)
             .addOnCompleteListener(this) { task ->
                 if (task.isSuccessful) {

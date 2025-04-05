@@ -20,6 +20,7 @@ import com.example.coffeeshop.redux.action.Action
 import com.example.coffeeshop.redux.data_class.AppState
 import com.example.coffeeshop.redux.store.Store
 import com.example.coffeeshop.service.Service
+import com.google.android.material.bottomnavigation.BottomNavigationView
 
 class Home : Activity() {
 
@@ -27,13 +28,13 @@ class Home : Activity() {
     private lateinit var coffeeRecyclerView: RecyclerView
     private lateinit var categoryRecyclerView: RecyclerView
     private lateinit var searchInput: EditText
-    private lateinit var bagButton: LinearLayout;
-    private lateinit var heartButton: LinearLayout
+
+    private lateinit var bottomNavigationView: BottomNavigationView
 
     private var store = Store.Companion.store;
     private var service = Service();
 
-    @SuppressLint("WrongViewCast")
+    @SuppressLint("WrongViewCast", "MissingInflatedId")
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
         setContentView(R.layout.home)
@@ -76,17 +77,30 @@ class Home : Activity() {
         service.getAllCategories()
         store.state.user?.let { service.getLikeCoffees(it.uid) }
 
-        bagButton = findViewById(R.id.bagButton)
-        bagButton.setOnClickListener {
-            val intent = Intent(this, Cart::class.java)
-            startActivity(intent)
+        bottomNavigationView = findViewById(R.id.navigation)
+        bottomNavigationView.selectedItemId = R.id.nav_home
+        bottomNavigationView.setOnItemSelectedListener { item ->
+            when (item.itemId) {
+                R.id.nav_home -> return@setOnItemSelectedListener true
+                R.id.nav_cart -> {
+                    startActivity(Intent(this, Cart::class.java))
+                    overridePendingTransition(0, 0)
+                    return@setOnItemSelectedListener true
+                }
+                R.id.nav_fav -> {
+                    startActivity(Intent(this, Like::class.java))
+                    overridePendingTransition(0, 0)
+                    return@setOnItemSelectedListener true
+                }
+                R.id.nav_pending -> {
+                    startActivity(Intent(this, Order::class.java))
+                    overridePendingTransition(0, 0)
+                    return@setOnItemSelectedListener true
+                }
+                else -> false
+            }
         }
 
-        heartButton = findViewById(R.id.heartButton)
-        heartButton.setOnClickListener {
-            val intent = Intent(this, Like::class.java)
-            startActivity(intent)
-        }
 
     }
 

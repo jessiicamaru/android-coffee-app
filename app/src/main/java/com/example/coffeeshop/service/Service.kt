@@ -10,6 +10,7 @@ import com.example.coffeeshop.data_class.Category
 import com.example.coffeeshop.data_class.Coffee
 import com.example.coffeeshop.data_class.Likes
 import com.example.coffeeshop.data_class.OrderRequest
+import com.example.coffeeshop.data_class.PendingOrder
 import com.example.coffeeshop.data_class.User
 import com.example.coffeeshop.redux.action.Action
 import com.example.coffeeshop.redux.store.Store
@@ -162,6 +163,31 @@ class Service {
             }
 
             override fun onFailure(call: Call<List<String>>, t: Throwable) {
+                Log.i(TAG, "On Fail: ${t.message}")
+            }
+        })
+    }
+
+    fun getPendingOrder(uid: String) {
+        val api = Retrofit.Builder()
+            .baseUrl(BASE_URL)
+            .addConverterFactory(GsonConverterFactory.create())
+            .build().create(OrderApi::class.java)
+
+        api.getPendingOrderByUid(uid).enqueue(object : Callback<List<PendingOrder>> {
+            override fun onResponse(
+                call: Call<List<PendingOrder>>,
+                response: Response<List<PendingOrder>>
+            ) {
+                if (response.isSuccessful) {
+                    response.body()?.let {
+                        Log.d("SHIT_FAV", "$it")
+                        store.dispatch(Action.SetOrders(ArrayList(it)))
+                    }
+                }
+            }
+
+            override fun onFailure(call: Call<List<PendingOrder>>, t: Throwable) {
                 Log.i(TAG, "On Fail: ${t.message}")
             }
         })

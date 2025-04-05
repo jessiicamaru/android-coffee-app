@@ -1,15 +1,19 @@
 package com.example.coffeeshop.activity
 
 import android.annotation.SuppressLint
+import android.content.Intent
 import androidx.appcompat.app.AppCompatActivity
 import android.os.Bundle
 import android.util.Log
 import android.view.LayoutInflater
+import android.widget.ImageButton
+import android.widget.LinearLayout
 import org.maplibre.android.MapLibre
 import org.maplibre.android.camera.CameraPosition
 import org.maplibre.android.geometry.LatLng
 import org.maplibre.android.maps.MapView
 import com.example.coffeeshop.R
+import com.example.coffeeshop.redux.action.Action
 import com.example.coffeeshop.redux.store.Store
 import okhttp3.Call
 import okhttp3.Callback
@@ -40,12 +44,17 @@ class Map : AppCompatActivity(), OnMapReadyCallback {
     @SuppressLint("MissingInflatedId")
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
-
         // Init MapLibre
         MapLibre.getInstance(this)
 
         setContentView(R.layout.map)
 
+        val returnButton: LinearLayout = findViewById(R.id.return_button)
+        returnButton.setOnClickListener {
+            store.dispatch(Action.RemoveHistory)
+            val intent = Intent(this, Home::class.java)
+            startActivity(intent)
+        }
         // Init the MapView
         mapView = findViewById(R.id.map_view)
         mapView.getMapAsync(this)

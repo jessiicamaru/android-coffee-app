@@ -68,7 +68,12 @@
         <activity
             android:name=".activity.Map"
             android:theme="@style/Theme.AppCompat.Light.NoActionBar" />
-
+        <activity
+            android:name=".activity.Order"
+            android:theme="@style/Theme.AppCompat.Light.NoActionBar" />
+        <activity
+            android:name=".activity.OrderDetail"
+            android:theme="@style/Theme.AppCompat.Light.NoActionBar" />
 
     </application>
 

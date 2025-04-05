@@ -104,85 +104,15 @@
     </LinearLayout>
 
 
-    <GridLayout
+    <com.google.android.material.bottomnavigation.BottomNavigationView
         android:id="@+id/navigation"
         android:layout_width="match_parent"
         android:layout_height="64dp"
         android:background="@color/white"
-        android:columnCount="4"
-        android:paddingStart="32dp"
-        android:paddingEnd="32dp"
-        android:rowCount="1"
         app:layout_constraintBottom_toBottomOf="parent"
-        app:layout_constraintEnd_toEndOf="parent"
-        app:layout_constraintStart_toStartOf="parent">
-
-        <LinearLayout
-            android:id="@+id/homeButton"
-            android:layout_width="0dp"
-            android:layout_height="wrap_content"
-            android:layout_columnWeight="1"
-            android:layout_gravity="fill"
-            android:gravity="center"
-            android:padding="16dp">
-
-            <ImageButton
-                android:layout_width="wrap_content"
-                android:layout_height="wrap_content"
-                android:background="@drawable/non_active_nav_button"
-                android:padding="8dp"
-                android:src="@drawable/ic_home" />
-        </LinearLayout>
-
-        <LinearLayout
-            android:id="@+id/heartButton"
-            android:layout_width="0dp"
-            android:layout_height="wrap_content"
-            android:layout_columnWeight="1"
-            android:layout_gravity="fill"
-            android:gravity="center"
-            android:padding="16dp">
-
-            <ImageButton
-                android:layout_width="wrap_content"
-                android:layout_height="wrap_content"
-                android:background="@drawable/non_active_nav_button"
-                android:padding="8dp"
-                android:src="@drawable/ic_heart" />
-        </LinearLayout>
-
-        <LinearLayout
-            android:id="@+id/bagButton"
-            android:layout_width="0dp"
-            android:layout_height="wrap_content"
-            android:layout_columnWeight="1"
-            android:layout_gravity="fill"
-            android:gravity="center"
-            android:padding="16dp">
-
-            <ImageButton
-                android:layout_width="32dp"
-                android:layout_height="32dp"
-                android:background="@drawable/ic_bag_active" />
-        </LinearLayout>
-
-        <LinearLayout
-            android:id="@+id/notificationButton"
-            android:layout_width="0dp"
-            android:layout_height="wrap_content"
-            android:layout_columnWeight="1"
-            android:layout_gravity="fill"
-            android:gravity="center"
-            android:padding="16dp">
-
-            <ImageButton
-                android:layout_width="wrap_content"
-                android:layout_height="wrap_content"
-                android:background="@drawable/non_active_nav_button"
-                android:padding="8dp"
-                android:src="@drawable/ic_notification" />
-        </LinearLayout>
-
-    </GridLayout>
+        app:itemIconTint="@color/bottom_nav_color"
+        app:itemTextColor="@color/bottom_nav_color"
+        app:layout_constraintStart_toStartOf="parent"
+        app:menu="@menu/bottom_nav_menu" />
 </androidx.constraintlayout.widget.ConstraintLayout>
 

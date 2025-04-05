@@ -40,6 +40,7 @@ class Reducer {
                 is Action.SetLocation -> state.copy(location = action.location)
                 is Action.SaveUser -> state.copy(user = action.user)
                 is Action.RefreshOrders -> state.copy(orders = ArrayList(state.orders))
+                is Action.RefreshOrdersPending -> state.copy(ordersPending = ArrayList(state.ordersPending))
                 is Action.RemoveOrder -> {
                     state.copy(orders = ArrayList(state.orders.filterNot { it == action.coffee }))
                 }
@@ -84,6 +85,7 @@ class Reducer {
                     state.copy(historyList = ArrayList(updateHistory))
                 }
 
+                is Action.SetOrders -> state.copy(ordersPending = action.orderRequest)
                 else -> state
             }
         }

@@ -19,13 +19,12 @@ import com.example.coffeeshop.redux.action.Action
 import com.example.coffeeshop.redux.data_class.AppState
 import com.example.coffeeshop.redux.store.Store
 import com.example.coffeeshop.service.Service
+import com.google.android.material.bottomnavigation.BottomNavigationView
 
 class Like : Activity() {
-    private lateinit var homeButton: LinearLayout;
-    private lateinit var bagButton: LinearLayout;
-
     private lateinit var coffeeRecyclerView: RecyclerView
 
+    private lateinit var bottomNavigationView: BottomNavigationView
 
     private var store = Store.Companion.store;
     private val service = Service();
@@ -36,17 +35,6 @@ class Like : Activity() {
 
         store.dispatch(Action.AddHistory(this))
 
-        homeButton = findViewById(R.id.homeButton);
-        homeButton.setOnClickListener {
-            val intent = Intent(this, Home::class.java)
-            startActivity(intent)
-        }
-
-        bagButton = findViewById(R.id.bagButton)
-        bagButton.setOnClickListener {
-            val intent = Intent(this, Cart::class.java)
-            startActivity(intent)
-        }
 
         coffeeRecyclerView = findViewById(R.id.cart_recycler_view)
         coffeeRecyclerView.layoutManager = GridLayoutManager(this, 1)
@@ -64,6 +52,30 @@ class Like : Activity() {
 
         store.dispatch(Action.RefreshOrders);
 
+
+        bottomNavigationView = findViewById(R.id.navigation)
+        bottomNavigationView.selectedItemId = R.id.nav_fav
+        bottomNavigationView.setOnItemSelectedListener { item ->
+            when (item.itemId) {
+                R.id.nav_home -> {
+                    startActivity(Intent(this, Home::class.java))
+                    overridePendingTransition(0, 0)
+                    return@setOnItemSelectedListener true
+                }
+                R.id.nav_cart -> {
+                    startActivity(Intent(this, Cart::class.java))
+                    overridePendingTransition(0, 0)
+                    return@setOnItemSelectedListener true
+                }
+                R.id.nav_pending -> {
+                    startActivity(Intent(this, Order::class.java))
+                    overridePendingTransition(0, 0)
+                    return@setOnItemSelectedListener true
+                }
+                R.id.nav_fav -> return@setOnItemSelectedListener true
+                else -> false
+            }
+        }
     }
 
     @SuppressLint("DefaultLocale", "SetTextI18n")

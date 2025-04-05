@@ -75,13 +75,16 @@ class OnOrder : Activity() {
                 val webSocketManager = WebSocketManager(user.uid)
 
                 webSocketManager.connectAndThen {
-                    service.createOrder(
-                        OrderRequest(
-                            uid = user.uid,
-                            coffees = coffeesToOrder,
-                            orderId = orderId
+                    store.state.address?.let { it1 ->
+                        service.createOrder(
+                            OrderRequest(
+                                uid = user.uid,
+                                coffees = coffeesToOrder,
+                                orderId = orderId,
+                                address = it1
+                            )
                         )
-                    )
+                    }
 
                     Log.d("ORDER_ID", orderId)
 
