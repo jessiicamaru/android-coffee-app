@@ -1,8 +1,7 @@
-package com.example.coffeeshop.toast
+package com.example.coffeeshop.utils
 
 import android.annotation.SuppressLint
 import android.content.Context
-import android.view.Gravity
 import android.view.LayoutInflater
 import android.widget.ImageView
 import android.widget.TextView

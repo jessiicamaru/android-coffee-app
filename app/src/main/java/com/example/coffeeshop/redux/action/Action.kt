@@ -7,6 +7,7 @@ import com.example.coffeeshop.data_class.Coffee
 import com.example.coffeeshop.data_class.LocationData
 import com.example.coffeeshop.data_class.PendingOrder
 import com.example.coffeeshop.data_class.User
+import org.json.JSONArray
 
 sealed class Action {
     data class SetAddress(val address: String?) : Action()
@@ -23,7 +24,9 @@ sealed class Action {
     data class DecreaseOrderQuantity(val coffeeId: String, val size: String) : Action()
     data class AddHistory(val history: Activity) : Action()
     data class SetLocation(val location: LocationData) : Action()
+    data class SetMapData(val mapData: JSONArray): Action()
     data object RemoveHistory : Action()
+    data object RemoveCart: Action()
     data object RefreshOrdersPending: Action()
     data object RefreshOrders : Action()
 }

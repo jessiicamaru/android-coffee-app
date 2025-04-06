@@ -31,6 +31,7 @@ class CoffeeItemOrderPendingAdapter(
         val coffeeTitle: TextView = itemView.findViewById(R.id.coffee_title)
         val categoryTitle: TextView = itemView.findViewById(R.id.category_title)
         val size: TextView = itemView.findViewById(R.id.size)
+        val quantity: TextView = itemView.findViewById(R.id.quantity)
     }
 
     override fun onCreateViewHolder(parent: ViewGroup, viewType: Int): CoffeeItemViewHolder {
@@ -57,6 +58,7 @@ class CoffeeItemOrderPendingAdapter(
         holder.coffeeTitle.text = currentItem.coffeeTitle
         holder.categoryTitle.text = currentItem.categoryTitle
         holder.size.text = "Size: ${currentItem.size}"
+        holder.quantity.text = "Quantity: ${currentItem.quantity}"
 
         holder.itemView.setOnClickListener {
             val intent = Intent(context, Detail::class.java).apply {

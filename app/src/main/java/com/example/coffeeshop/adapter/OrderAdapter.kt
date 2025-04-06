@@ -32,21 +32,20 @@ class OrderAdapter(private val orders: List<PendingOrder>, private val context: 
 
     override fun onBindViewHolder(holder: OrderViewHolder, position: Int) {
         val order = orders[position]
-        val totalAmount = order.coffees.sumOf { it.coffeeCost * it.quantity }
         holder.orderId.text = "Order ID: ${order.orderId}"
         holder.userName.text = "Name: ${order.userInfo.name}"
         holder.userEmail.text = "Email: ${order.userInfo.email}"
         holder.createdAt.text = "Created at: ${order.createdAt}"
-        holder.total.text = "Total: $totalAmount"
+        holder.total.text = "Total: ${order.total}"
 
         Log.d("ORDER_ID", order.orderId)
-        Log.d("TOTAL_AMOUNT", "Calculated total: $totalAmount")
+        Log.d("TOTAL_AMOUNT", "Calculated total: ${order.total}")
 
         holder.itemView.setOnClickListener {
             val intent = Intent(context, OrderDetail::class.java).apply {
                 putExtra("orderId", order.orderId)
             }
-            Log.d("INTENT", "Sending intent with orderId: ${order.orderId}, totalAmount: $totalAmount")
+            Log.d("INTENT", "Sending intent with orderId: ${order.orderId}, totalAmount: ${order.total}")
             context.startActivity(intent)
         }
     }

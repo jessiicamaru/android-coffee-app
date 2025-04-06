@@ -3,7 +3,6 @@ package com.example.coffeeshop.activity
 import android.annotation.SuppressLint
 import android.app.Activity
 import android.content.Intent
-import android.os.Build
 import android.os.Bundle
 import android.util.Log
 import android.widget.Button
@@ -12,16 +11,14 @@ import android.widget.ImageView
 import android.widget.RadioButton
 import android.widget.RadioGroup
 import android.widget.TextView
-import androidx.annotation.RequiresApi
 import com.bumptech.glide.Glide
 import com.example.coffeeshop.R
 import com.example.coffeeshop.data_class.Coffee
 import com.example.coffeeshop.data_class.Likes
 import com.example.coffeeshop.redux.action.Action
-import com.example.coffeeshop.redux.data_class.AppState
 import com.example.coffeeshop.redux.store.Store
 import com.example.coffeeshop.service.Service
-import com.example.coffeeshop.toast.toast
+import com.example.coffeeshop.utils.toast
 
 class Detail : Activity() {
     private lateinit var coffeeImage: ImageView

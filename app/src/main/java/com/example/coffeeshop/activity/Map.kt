@@ -106,27 +106,11 @@ class Map : AppCompatActivity(), OnMapReadyCallback {
     }
 
     private fun drawRouteFromAPI() {
-        val url =
-            "https://router.project-osrm.org/route/v1/driving/108.2561075672051,15.990506012096326;${store.state.location?.longitude},${store.state.location?.latitude}?geometries=geojson"
 
-        val request = Request.Builder().url(url).build()
-        val client = OkHttpClient()
-
-        client.newCall(request).enqueue(object : Callback {
-            override fun onFailure(call: Call, e: IOException) {
-                Log.e("Route", "Lỗi khi tải tuyến đường: ${e.message}")
-            }
-
-            override fun onResponse(call: Call, response: Response) {
-                response.body?.let { responseBody ->
-                    val responseString = responseBody.string()
-                    val jsonObject = JSONObject(responseString)
-                    val routes = jsonObject.getJSONArray("routes")
-                    val geometry = routes.getJSONObject(0)
-                        .getJSONObject("geometry")
-                        .getJSONArray("coordinates")
-
-                    val geoJson = """
+        runOnUiThread {
+            val style = mapLibreMap.style ?: return@runOnUiThread
+            if (store.state.mapData != null) {
+                val geoJson = """
                                 {
                                   "type": "FeatureCollection",
                                   "features": [
@@ -134,38 +118,34 @@ class Map : AppCompatActivity(), OnMapReadyCallback {
                                       "type": "Feature",
                                       "geometry": {
                                         "type": "LineString",
-                                        "coordinates": $geometry
+                                        "coordinates": ${store.state.mapData}
                                       },
                                       "properties": {}
                                     }
                                   ]
                                 }
                                 """.trimIndent()
+                val existingSource = style.getSourceAs<GeoJsonSource>("route-source")
 
-                    runOnUiThread {
-                        val style = mapLibreMap.style ?: return@runOnUiThread
+                if (existingSource != null) {
+                    existingSource.setGeoJson(geoJson)
+                } else {
+                    val source = GeoJsonSource("route-source", geoJson)
+                    style.addSource(source)
 
-                        val existingSource = style.getSourceAs<GeoJsonSource>("route-source")
-                        if (existingSource != null) {
-                            existingSource.setGeoJson(geoJson)
-                        } else {
-                            val source = GeoJsonSource("route-source", geoJson)
-                            style.addSource(source)
+                    val lineLayer = LineLayer("route-layer", "route-source").withProperties(
+                        PropertyFactory.lineColor("#C67C4E"),
+                        PropertyFactory.lineWidth(5f)
+                    )
 
-                            val lineLayer = LineLayer("route-layer", "route-source").withProperties(
-                                PropertyFactory.lineColor("#C67C4E"),
-                                PropertyFactory.lineWidth(5f)
-                            )
-
-                            style.addLayer(lineLayer)
-                        }
-
-                        adjustCameraToRoute(geometry)
-                    }
+                    style.addLayer(lineLayer)
                 }
+
+                adjustCameraToRoute(store.state.mapData!!)
             }
-        })
+        }
     }
+
 
     private fun adjustCameraToRoute(coordinates: JSONArray) {
         var minLat = Double.MAX_VALUE

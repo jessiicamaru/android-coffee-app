@@ -6,19 +6,15 @@ import android.content.Intent
 import android.os.Bundle
 import android.util.Log
 import android.widget.Button
-import android.widget.LinearLayout
 import android.widget.TextView
 import androidx.recyclerview.widget.GridLayoutManager
-import androidx.recyclerview.widget.LinearLayoutManager
 import androidx.recyclerview.widget.RecyclerView
 import com.example.coffeeshop.R
-import com.example.coffeeshop.adapter.CategoryItemAdapter
-import com.example.coffeeshop.adapter.CoffeeItemAdapter
 import com.example.coffeeshop.adapter.CoffeeItemCartAdapter
 import com.example.coffeeshop.redux.action.Action
 import com.example.coffeeshop.redux.data_class.AppState
 import com.example.coffeeshop.redux.store.Store
-import com.example.coffeeshop.toast.toast
+import com.example.coffeeshop.utils.toast
 import com.google.android.material.bottomnavigation.BottomNavigationView
 
 class Cart : Activity() {
@@ -61,7 +57,9 @@ class Cart : Activity() {
 
 
         store.subscribe {
-            updateUI(store.state)
+            runOnUiThread {
+                updateUI(store.state)
+            }
         }
 
         store.dispatch(Action.RefreshOrders)

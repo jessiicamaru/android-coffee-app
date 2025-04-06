@@ -85,6 +85,11 @@ class Reducer {
                     state.copy(historyList = ArrayList(updateHistory))
                 }
 
+                is Action.SetMapData -> {
+                    state.copy(mapData = action.mapData)
+                }
+
+                is Action.RemoveCart -> state.copy(orders = arrayListOf())
                 is Action.SetOrders -> state.copy(ordersPending = action.orderRequest)
                 else -> state
             }

@@ -6,6 +6,7 @@ import com.example.coffeeshop.data_class.Coffee
 import com.example.coffeeshop.data_class.LocationData
 import com.example.coffeeshop.data_class.PendingOrder
 import com.example.coffeeshop.data_class.User
+import org.json.JSONArray
 
 data class AppState(
     val address: String? = null,
@@ -17,5 +18,6 @@ data class AppState(
     val likeCoffees: ArrayList<String> = arrayListOf(),
     val historyList: ArrayList<Activity> = arrayListOf(),
     val user: User? = null,
+    val mapData: JSONArray? = null,
     val location: LocationData? = null
 )
