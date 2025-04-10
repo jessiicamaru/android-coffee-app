@@ -25,16 +25,17 @@
         tools:ignore="MissingConstraints">
 
         <android.support.v7.widget.CardView
-            android:layout_margin="16dp"
             android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:layout_margin="16dp"
             android:background="@color/white"
             app:cardCornerRadius="10dp"
-            app:cardElevation="8dp"
-            android:layout_height="wrap_content">
+            app:cardElevation="8dp">
+
             <ImageView
-                android:padding="12dp"
                 android:layout_width="match_parent"
                 android:layout_height="match_parent"
+                android:padding="12dp"
                 android:src="@drawable/arrow_left" />
         </android.support.v7.widget.CardView>
 
@@ -99,7 +100,7 @@
             android:layout_width="match_parent"
             android:layout_height="5dp"
             android:layout_marginTop="32dp"
-            android:columnCount="3"
+            android:columnCount="4"
             android:rowCount="1"
             tools:ignore="UselessLeaf">
 
@@ -108,37 +109,79 @@
                 android:layout_height="5dp"
                 android:layout_rowWeight="1"
                 android:layout_columnWeight="1"
-                android:layout_marginStart="8dp"
-                android:layout_marginEnd="8dp"
-                android:layout_marginBottom="16dp"
-                android:background="#36C07E" />
+                android:layout_marginStart="4dp"
+                android:layout_marginEnd="4dp"
+                android:background="#E3E3E3">
+
+                <LinearLayout
+                    android:id="@+id/pending_stat"
+                    android:layout_width="match_parent"
+                    android:layout_height="5dp"
+                    android:layout_rowWeight="1"
+                    android:layout_columnWeight="1"
+                    android:orientation="horizontal" />
+            </LinearLayout>
 
             <LinearLayout
                 android:layout_width="0dp"
                 android:layout_height="5dp"
                 android:layout_rowWeight="1"
                 android:layout_columnWeight="1"
-                android:layout_marginStart="8dp"
-                android:layout_marginEnd="8dp"
-                android:layout_marginBottom="16dp"
-                android:background="#E3E3E3" />
+                android:layout_marginStart="4dp"
+                android:layout_marginEnd="4dp"
+                android:background="#E3E3E3">
+
+                <LinearLayout
+                    android:id="@+id/preparing_stat"
+                    android:layout_width="match_parent"
+                    android:layout_height="5dp"
+                    android:layout_rowWeight="1"
+                    android:layout_columnWeight="1"
+                    android:orientation="horizontal" />
+            </LinearLayout>
 
             <LinearLayout
                 android:layout_width="0dp"
                 android:layout_height="5dp"
                 android:layout_rowWeight="1"
                 android:layout_columnWeight="1"
-                android:layout_marginStart="8dp"
-                android:layout_marginEnd="8dp"
-                android:layout_marginBottom="16dp"
-                android:background="#E3E3E3" />
+                android:layout_marginStart="4dp"
+                android:layout_marginEnd="4dp"
+                android:background="#E3E3E3">
+
+                <LinearLayout
+                    android:id="@+id/delivering_stat"
+                    android:layout_width="match_parent"
+                    android:layout_height="5dp"
+                    android:layout_rowWeight="1"
+                    android:layout_columnWeight="1"
+                    android:orientation="horizontal" />
+            </LinearLayout>
+
+            <LinearLayout
+                android:layout_width="0dp"
+                android:layout_height="5dp"
+                android:layout_rowWeight="1"
+                android:layout_columnWeight="1"
+                android:layout_marginStart="4dp"
+                android:layout_marginEnd="4dp"
+                android:background="#E3E3E3">
+
+                <LinearLayout
+                    android:id="@+id/complete_stat"
+                    android:layout_width="match_parent"
+                    android:layout_height="5dp"
+                    android:layout_rowWeight="1"
+                    android:layout_columnWeight="1"
+                    android:orientation="horizontal" />
+            </LinearLayout>
         </GridLayout>
 
 
         <LinearLayout
-            android:layout_marginTop="16dp"
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
+            android:layout_marginTop="16dp"
             android:gravity="center"
             android:orientation="horizontal">
 
@@ -166,17 +209,17 @@
             android:id="@+id/delivery_staff"
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
+            android:layout_marginTop="16dp"
             android:background="@drawable/only_rounded"
-            android:backgroundTint="@color/white"
-            android:layout_marginTop="16dp">
+            android:backgroundTint="@color/white">
 
             <GridLayout
-                android:background="@drawable/border_1"
-                android:padding="8dp"
                 android:id="@+id/myGrid"
                 android:layout_width="match_parent"
                 android:layout_height="wrap_content"
+                android:background="@drawable/border_1"
                 android:columnCount="3"
+                android:padding="8dp"
                 android:rowCount="1">
 
                 <android.support.v7.widget.CardView
@@ -235,11 +278,11 @@
                     app:cardCornerRadius="10dp">
 
                     <ImageView
-                        android:background="@drawable/border_1"
-                        android:padding="12dp"
                         android:id="@+id/phone"
                         android:layout_width="match_parent"
                         android:layout_height="match_parent"
+                        android:background="@drawable/border_1"
+                        android:padding="12dp"
                         android:scaleType="centerCrop"
                         android:src="@drawable/ic_phone" />
 

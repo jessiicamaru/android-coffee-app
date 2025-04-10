@@ -87,18 +87,22 @@ class Order : Activity() {
 
         val orders = state.ordersPending ?: emptyList()
 
-        val todayOrders = orders.filter {
-            val orderDateTime = LocalDateTime.parse(it.createdAt, formatter)
-            val orderDate = orderDateTime.toLocalDate()
-            orderDate.isEqual(today)
-        }
+        val todayOrders = orders
+            .filter {
+                val orderDateTime = LocalDateTime.parse(it.createdAt, formatter)
+                val orderDate = orderDateTime.toLocalDate()
+                orderDate.isEqual(today)
+            }
+            .sortedByDescending { LocalDateTime.parse(it.createdAt, formatter) }
         todayRecyclerView.adapter = OrderAdapter(todayOrders, this)
 
-        val beforeOrders = orders.filter {
-            val orderDateTime = LocalDateTime.parse(it.createdAt, formatter)
-            val orderDate = orderDateTime.toLocalDate()
-            orderDate.isBefore(today)
-        }
+        val beforeOrders = orders
+            .filter {
+                val orderDateTime = LocalDateTime.parse(it.createdAt, formatter)
+                val orderDate = orderDateTime.toLocalDate()
+                orderDate.isBefore(today)
+            }
+            .sortedByDescending { LocalDateTime.parse(it.createdAt, formatter) }
         beforeRecyclerView.adapter = OrderAdapter(beforeOrders, this)
     }
 

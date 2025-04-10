@@ -106,7 +106,10 @@ class OnOrder : Activity() {
                         store.dispatch(Action.RemoveCart)
 
                         Log.d("ORDER_ID", orderId)
-                        val intent = Intent(this, Map::class.java)
+                        val intent = Intent(this, Map::class.java).apply {
+                            putExtra("stat", 0)
+                            putExtra("fee", shippingFee)
+                        }
                         startActivity(intent)
                     }
                 }
