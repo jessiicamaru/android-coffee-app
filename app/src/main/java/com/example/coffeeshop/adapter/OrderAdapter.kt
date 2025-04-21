@@ -2,6 +2,7 @@ package com.example.coffeeshop.adapter
 
 import android.content.Context
 import android.content.Intent
+import android.graphics.Color
 import android.util.Log
 import android.view.LayoutInflater
 import android.view.View
@@ -22,6 +23,7 @@ class OrderAdapter(private val orders: List<PendingOrder>, private val context: 
         val userEmail: TextView = itemView.findViewById(R.id.tv_user_email)
         val createdAt: TextView = itemView.findViewById(R.id.tv_created_at)
         val total: TextView = itemView.findViewById(R.id.total)
+        val status: TextView = itemView.findViewById(R.id.status)
     }
 
     override fun onCreateViewHolder(parent: ViewGroup, viewType: Int): OrderViewHolder {
@@ -37,6 +39,32 @@ class OrderAdapter(private val orders: List<PendingOrder>, private val context: 
         holder.userEmail.text = "Email: ${order.userInfo.email}"
         holder.createdAt.text = "Created at: ${order.createdAt}"
         holder.total.text = "Total: ${order.total}"
+
+        when (order.stat) {
+            0 -> {
+                holder.status.text = "Pending"
+            }
+
+            1 -> {
+                holder.status.text = "Preparing"
+                holder.status.setTextColor(Color.parseColor("#FFA955"))
+            }
+
+            2 -> {
+                holder.status.text = "Delivering"
+                holder.status.setTextColor(Color.parseColor("#C67C4E"))
+            }
+
+            3 -> {
+                holder.status.text = "Success"
+                holder.status.setTextColor(Color.parseColor("#36C07E"))
+            }
+
+            4 -> {
+                holder.status.text = "Cancelled"
+                holder.status.setTextColor(Color.parseColor("#CF0F47"))
+            }
+        }
 
         Log.d("ORDER_ID", order.orderId)
         Log.d("TOTAL_AMOUNT", "Calculated total: ${order.total}")

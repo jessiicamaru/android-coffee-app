@@ -78,6 +78,13 @@ class Reducer {
                     state.copy(historyList = ArrayList(updateHistory))
                 }
 
+                is Action.SetSocketResponse -> {
+                    val notifications = state.notifications;
+                    notifications.add(action.socketResponse)
+
+                    state.copy(notifications = ArrayList(notifications))
+                }
+
                 is Action.RemoveHistory -> {
                     val updateHistory = state.historyList;
                     updateHistory.removeAt(updateHistory.size - 1)

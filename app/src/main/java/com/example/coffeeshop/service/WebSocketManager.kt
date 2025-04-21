@@ -1,20 +1,46 @@
 package com.example.coffeeshop.service
 
+import android.content.Context
+import android.content.Intent
 import android.os.Handler
 import android.os.Looper
 import android.util.Log
+import androidx.localbroadcastmanager.content.LocalBroadcastManager
+import com.example.coffeeshop.data_class.SocketResponse
+import com.example.coffeeshop.redux.action.Action
+import com.example.coffeeshop.redux.store.Store
 import okhttp3.*
 import okio.ByteString
 import org.json.JSONException
 import org.json.JSONObject
 import java.util.concurrent.TimeUnit
 
-class WebSocketManager(private val uid: String) {
+class WebSocketManager private constructor() {
 
+    companion object {
+        const val ACTION_ORDER_STATUS = "com.example.coffeeshop.ORDER_STATUS"
+        const val EXTRA_ORDER_ID = "orderId"
+        const val EXTRA_STATUS = "status"
+
+        @Volatile
+        private var INSTANCE: WebSocketManager? = null
+
+        fun getInstance(context: Context): WebSocketManager {
+            return INSTANCE ?: synchronized(this) {
+                INSTANCE ?: WebSocketManager().apply {
+                    this.applicationContext = context.applicationContext
+                    INSTANCE = this
+                }
+            }
+        }
+    }
+
+    private lateinit var applicationContext: Context
     private var webSocket: WebSocket? = null
     private var isConnected = false
+    private var uid: String? = null
     private var onConnected: (() -> Unit)? = null
-    private var onOrderStatusReceived: ((String, Int) -> Unit)? = null
+    private var store = Store.Companion.store;
 
     private val client = OkHttpClient.Builder()
         .connectTimeout(10, TimeUnit.SECONDS)
@@ -24,7 +50,20 @@ class WebSocketManager(private val uid: String) {
 
     private val handler = Handler(Looper.getMainLooper())
 
-    fun connectWebSocket() {
+    fun initialize(uid: String) {
+        if (this.uid != uid) {
+            this.uid = uid
+            disconnect()
+            connectWebSocket()
+        }
+    }
+
+    private fun connectWebSocket() {
+        if (uid == null) {
+            Log.e("WebSocket", "Cannot connect - UID is null")
+            return
+        }
+
         val request = Request.Builder()
             .url("ws://10.0.2.2:5000/order-status?uid=$uid")
             .build()
@@ -42,10 +81,9 @@ class WebSocketManager(private val uid: String) {
             override fun onFailure(webSocket: WebSocket, t: Throwable, response: Response?) {
                 isConnected = false
                 Log.e("WebSocket", "Connection failed: ${t.message}")
-                // Thử kết nối lại sau 2 giây nếu thất bại
                 handler.postDelayed({
-                    if (!isConnected) connectWebSocket()
-                }, 2000) // 2000ms = 2 giây
+                    if (!isConnected && uid != null) connectWebSocket()
+                }, 2000)
             }
 
             override fun onMessage(webSocket: WebSocket, text: String) {
@@ -54,7 +92,13 @@ class WebSocketManager(private val uid: String) {
                     val jsonObject = JSONObject(text)
                     val orderId = jsonObject.getString("orderId")
                     val status = jsonObject.getInt("status")
-                    onOrderStatusReceived?.invoke(orderId, status)
+
+                    // Gửi broadcast tới các activity
+                    val intent = Intent(ACTION_ORDER_STATUS).apply {
+                        putExtra(EXTRA_ORDER_ID, orderId)
+                        putExtra(EXTRA_STATUS, status)
+                    }
+                    LocalBroadcastManager.getInstance(applicationContext).sendBroadcast(intent)
                 } catch (e: JSONException) {
                     Log.e("WebSocket", "JSON parsing error: ${e.message}")
                 }
@@ -83,13 +127,9 @@ class WebSocketManager(private val uid: String) {
         }
     }
 
-    fun setOnOrderStatusReceivedListener(listener: (String, Int) -> Unit) {
-        onOrderStatusReceived = listener
-    }
-
     fun disconnect() {
         webSocket?.close(1000, "Client disconnect")
         isConnected = false
-        handler.removeCallbacksAndMessages(null) // Xóa các tác vụ đã lên lịch
+        handler.removeCallbacksAndMessages(null)
     }
 }

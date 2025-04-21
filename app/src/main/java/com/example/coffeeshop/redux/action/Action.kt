@@ -6,6 +6,7 @@ import com.example.coffeeshop.data_class.Category
 import com.example.coffeeshop.data_class.Coffee
 import com.example.coffeeshop.data_class.LocationData
 import com.example.coffeeshop.data_class.PendingOrder
+import com.example.coffeeshop.data_class.SocketResponse
 import com.example.coffeeshop.data_class.User
 import org.json.JSONArray
 
@@ -25,6 +26,7 @@ sealed class Action {
     data class AddHistory(val history: Activity) : Action()
     data class SetLocation(val location: LocationData) : Action()
     data class SetMapData(val mapData: JSONArray): Action()
+    data class SetSocketResponse(val socketResponse: SocketResponse): Action()
     data object RemoveHistory : Action()
     data object RemoveCart: Action()
     data object RefreshOrdersPending: Action()

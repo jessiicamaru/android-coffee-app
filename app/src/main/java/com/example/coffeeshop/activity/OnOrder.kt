@@ -2,7 +2,10 @@ package com.example.coffeeshop.activity
 
 import android.annotation.SuppressLint
 import android.app.Activity
+import android.content.BroadcastReceiver
+import android.content.Context
 import android.content.Intent
+import android.content.IntentFilter
 import android.os.Bundle
 import android.util.Log
 import android.widget.Button
@@ -10,17 +13,21 @@ import android.widget.ImageButton
 import android.widget.RadioButton
 import android.widget.RadioGroup
 import android.widget.TextView
+import androidx.localbroadcastmanager.content.LocalBroadcastManager
 import androidx.recyclerview.widget.GridLayoutManager
 import androidx.recyclerview.widget.RecyclerView
 import com.example.coffeeshop.R
 import com.example.coffeeshop.adapter.CoffeeItemOrderAdapter
 import com.example.coffeeshop.data_class.CoffeeRequest
 import com.example.coffeeshop.data_class.OrderRequest
+import com.example.coffeeshop.data_class.PendingOrder
+import com.example.coffeeshop.data_class.UserInfo
 import com.example.coffeeshop.redux.action.Action
 import com.example.coffeeshop.redux.data_class.AppState
 import com.example.coffeeshop.redux.store.Store
 import com.example.coffeeshop.service.Service
 import com.example.coffeeshop.service.WebSocketManager
+import com.example.coffeeshop.utils.toast
 import okhttp3.Call
 import okhttp3.Callback
 import okhttp3.OkHttpClient
@@ -72,18 +79,27 @@ class OnOrder : Activity() {
         ogFee = findViewById(R.id.og_fee)
         proFee = findViewById(R.id.pro_fee)
 
+        LocalBroadcastManager.getInstance(this).registerReceiver(
+            orderStatusReceiver,
+            IntentFilter(WebSocketManager.ACTION_ORDER_STATUS)
+        )
+
         orderButton.setOnClickListener {
             store.state.user?.let { user ->
                 val coffeesToOrder = store.state.orders.map { coffee ->
-                    CoffeeRequest(coffeeId = coffee.coffeeId, size = coffee.size, quantity = coffee.quantity)
+                    CoffeeRequest(
+                        coffeeId = coffee.coffeeId,
+                        size = coffee.size,
+                        quantity = coffee.quantity
+                    )
                 }
                 val orderId = UUID.randomUUID().toString()
-                val webSocketManager = WebSocketManager(user.uid)
 
-                // Tính price trước khi gửi yêu cầu
                 price = store.state.orders.sumOf { it.coffeeCost * it.quantity }
                 Log.d("ORDER", "Price before sending: $price")
 
+                // Sử dụng instance WebSocketManager đã có
+                val webSocketManager = WebSocketManager.getInstance(this)
                 webSocketManager.connectAndThen {
                     runOnUiThread {
                         store.state.address?.let { orderAddress ->
@@ -93,7 +109,7 @@ class OnOrder : Activity() {
                                     coffees = coffeesToOrder,
                                     orderId = orderId,
                                     address = orderAddress,
-                                    total = price, // Sử dụng price đã tính trước
+                                    total = price,
                                     fee = shippingFee,
                                     longitude = store.state.location?.longitude ?: 0.0,
                                     latitude = store.state.location?.latitude ?: 0.0,
@@ -105,10 +121,12 @@ class OnOrder : Activity() {
                         // Dispatch RemoveCart sau khi gửi yêu cầu
                         store.dispatch(Action.RemoveCart)
 
+
                         Log.d("ORDER_ID", orderId)
                         val intent = Intent(this, Map::class.java).apply {
                             putExtra("stat", 0)
                             putExtra("fee", shippingFee)
+                            putExtra("orderId", orderId)
                         }
                         startActivity(intent)
                     }
@@ -201,5 +219,24 @@ class OnOrder : Activity() {
                 }
             }
         })
+    }
+
+    private val orderStatusReceiver = object : BroadcastReceiver() {
+        override fun onReceive(context: Context, intent: Intent) {
+            val orderId = intent.getStringExtra(WebSocketManager.EXTRA_ORDER_ID)
+            val status = intent.getIntExtra(WebSocketManager.EXTRA_STATUS, -1)
+            Log.d("WebSocket", "OnOrder received status for Order $orderId: $status")
+            // TODO: Cập nhật UI hoặc chuyển màn hình
+
+            toast(this@OnOrder) {
+                "Your order status is changed"
+            }
+        }
+    }
+
+    override fun onDestroy() {
+        super.onDestroy()
+        LocalBroadcastManager.getInstance(this).unregisterReceiver(orderStatusReceiver)
+        WebSocketManager.getInstance(this).disconnect()
     }
 }

@@ -2,13 +2,18 @@ package com.example.coffeeshop.activity
 
 import android.annotation.SuppressLint
 import android.app.Activity
+import android.content.BroadcastReceiver
+import android.content.Context
 import android.content.Intent
+import android.content.IntentFilter
 import android.os.Bundle
 import android.text.Editable
 import android.text.TextWatcher
+import android.util.Log
 import android.widget.EditText
 import android.widget.LinearLayout
 import android.widget.TextView
+import androidx.localbroadcastmanager.content.LocalBroadcastManager
 import androidx.recyclerview.widget.GridLayoutManager
 import androidx.recyclerview.widget.LinearLayoutManager
 import androidx.recyclerview.widget.RecyclerView
@@ -20,6 +25,8 @@ import com.example.coffeeshop.redux.action.Action
 import com.example.coffeeshop.redux.data_class.AppState
 import com.example.coffeeshop.redux.store.Store
 import com.example.coffeeshop.service.Service
+import com.example.coffeeshop.service.WebSocketManager
+import com.example.coffeeshop.utils.toast
 import com.google.android.material.bottomnavigation.BottomNavigationView
 
 class Home : Activity() {
@@ -28,7 +35,7 @@ class Home : Activity() {
     private lateinit var coffeeRecyclerView: RecyclerView
     private lateinit var categoryRecyclerView: RecyclerView
     private lateinit var searchInput: EditText
-
+    private lateinit var notificationAmount: TextView
     private lateinit var bottomNavigationView: BottomNavigationView
 
     private var store = Store.Companion.store;
@@ -41,8 +48,8 @@ class Home : Activity() {
 
         store.dispatch(Action.AddHistory(this))
 
-        locationText = findViewById(R.id.location) // Lấy view TextView để hiển thị địa chỉ
-
+        locationText = findViewById(R.id.location)
+        notificationAmount = findViewById(R.id.notification_amount);
 
         coffeeRecyclerView = findViewById(R.id.recycler_view)
         coffeeRecyclerView.layoutManager = GridLayoutManager(this, 2)
@@ -75,7 +82,17 @@ class Home : Activity() {
 
         service.getAllCoffees()
         service.getAllCategories()
-        store.state.user?.let { service.getLikeCoffees(it.uid) }
+        store.state.user?.let {
+            service.getLikeCoffees(it.uid)
+            val webSocketManager = WebSocketManager.getInstance(this)
+            webSocketManager.initialize(it.uid)
+
+        }
+
+        LocalBroadcastManager.getInstance(this).registerReceiver(
+            orderStatusReceiver,
+            IntentFilter(WebSocketManager.ACTION_ORDER_STATUS)
+        )
 
         bottomNavigationView = findViewById(R.id.navigation)
         bottomNavigationView.selectedItemId = R.id.nav_home
@@ -125,5 +142,24 @@ class Home : Activity() {
         }
 
         coffeeRecyclerView.adapter = CoffeeItemAdapter(ArrayList(filteredCoffees), this)
+    }
+
+    private val orderStatusReceiver = object : BroadcastReceiver() {
+        override fun onReceive(context: Context, intent: Intent) {
+            val orderId = intent.getStringExtra(WebSocketManager.EXTRA_ORDER_ID)
+            val status = intent.getIntExtra(WebSocketManager.EXTRA_STATUS, -1)
+            Log.d("WebSocket", "MainActivity received status for Order $orderId: $status")
+            // TODO: Cập nhật UI hoặc chuyển màn hình
+
+            toast(this@Home) {
+                "Your order status is changed"
+            }
+        }
+    }
+
+    override fun onDestroy() {
+        super.onDestroy()
+        LocalBroadcastManager.getInstance(this).unregisterReceiver(orderStatusReceiver)
+        WebSocketManager.getInstance(this).disconnect()
     }
 }

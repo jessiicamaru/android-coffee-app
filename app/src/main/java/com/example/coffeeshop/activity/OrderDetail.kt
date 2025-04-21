@@ -3,12 +3,17 @@ package com.example.coffeeshop.activity
 
 import android.annotation.SuppressLint
 import android.app.Activity
+import android.content.BroadcastReceiver
+import android.content.Context
 import android.content.Intent
+import android.content.IntentFilter
+import android.graphics.Color
 import android.os.Bundle
 import android.util.Log
 import android.widget.Button
 import android.widget.ImageButton
 import android.widget.TextView
+import androidx.localbroadcastmanager.content.LocalBroadcastManager
 import androidx.recyclerview.widget.GridLayoutManager
 import androidx.recyclerview.widget.RecyclerView
 import com.example.coffeeshop.R
@@ -19,6 +24,8 @@ import com.example.coffeeshop.redux.action.Action
 import com.example.coffeeshop.redux.data_class.AppState
 import com.example.coffeeshop.redux.store.Store
 import com.example.coffeeshop.service.Service
+import com.example.coffeeshop.service.WebSocketManager
+import com.example.coffeeshop.utils.toast
 import okhttp3.Call
 import okhttp3.Callback
 import okhttp3.OkHttpClient
@@ -66,6 +73,11 @@ class OrderDetail : Activity() {
             startActivity(intent)
         }
 
+        LocalBroadcastManager.getInstance(this).registerReceiver(
+            orderStatusReceiver,
+            IntentFilter(WebSocketManager.ACTION_ORDER_STATUS)
+        )
+
         coffeeRecyclerView = findViewById(R.id.order_recycler_view)
         coffeeRecyclerView.layoutManager = GridLayoutManager(this, 1)
         coffeeRecyclerView.setHasFixedSize(true)
@@ -79,7 +91,8 @@ class OrderDetail : Activity() {
         val orderPending = store.state.ordersPending.find { it.orderId == orderId }
 
         if (orderPending != null) {
-            getMap(orderPending)
+            if (orderPending.stat != 4)
+                getMap(orderPending)
         }
 
         openMap.setOnClickListener {
@@ -112,10 +125,29 @@ class OrderDetail : Activity() {
         val stat = orderPending?.stat ?: 0
 
         when (stat) {
-            0 -> status.text = "Pending"
-            1 -> status.text = "Preparing"
-            2 -> status.text = "Delivering"
-            3 -> status.text = "Completed"
+            0 -> {
+                status.text = "Pending"
+            }
+
+            1 -> {
+                status.text = "Preparing"
+                status.setTextColor(Color.parseColor("#FFA955"))
+            }
+
+            2 -> {
+                status.text = "Delivering"
+                status.setTextColor(Color.parseColor("#C67C4E"))
+            }
+
+            3 -> {
+                status.text = "Success"
+                status.setTextColor(Color.parseColor("#36C07E"))
+            }
+
+            4 -> {
+                status.text = "Cancelled"
+                status.setTextColor(Color.parseColor("#CF0F47"))
+            }
             else -> status.text = ""
         }
 
@@ -153,5 +185,24 @@ class OrderDetail : Activity() {
                 }
             }
         })
+    }
+
+    private val orderStatusReceiver = object : BroadcastReceiver() {
+        override fun onReceive(context: Context, intent: Intent) {
+            val orderId = intent.getStringExtra(WebSocketManager.EXTRA_ORDER_ID)
+            val status = intent.getIntExtra(WebSocketManager.EXTRA_STATUS, -1)
+            Log.d("WebSocket", "OrderDetail received status for Order $orderId: $status")
+            // TODO: Cập nhật UI hoặc chuyển màn hình
+
+            toast(this@OrderDetail) {
+                "Your order status is changed"
+            }
+        }
+    }
+
+    override fun onDestroy() {
+        super.onDestroy()
+        LocalBroadcastManager.getInstance(this).unregisterReceiver(orderStatusReceiver)
+        WebSocketManager.getInstance(this).disconnect()
     }
 }

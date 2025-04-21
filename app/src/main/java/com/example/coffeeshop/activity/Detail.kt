@@ -2,7 +2,10 @@ package com.example.coffeeshop.activity
 
 import android.annotation.SuppressLint
 import android.app.Activity
+import android.content.BroadcastReceiver
+import android.content.Context
 import android.content.Intent
+import android.content.IntentFilter
 import android.os.Bundle
 import android.util.Log
 import android.widget.Button
@@ -11,6 +14,7 @@ import android.widget.ImageView
 import android.widget.RadioButton
 import android.widget.RadioGroup
 import android.widget.TextView
+import androidx.localbroadcastmanager.content.LocalBroadcastManager
 import com.bumptech.glide.Glide
 import com.example.coffeeshop.R
 import com.example.coffeeshop.data_class.Coffee
@@ -18,6 +22,7 @@ import com.example.coffeeshop.data_class.Likes
 import com.example.coffeeshop.redux.action.Action
 import com.example.coffeeshop.redux.store.Store
 import com.example.coffeeshop.service.Service
+import com.example.coffeeshop.service.WebSocketManager
 import com.example.coffeeshop.utils.toast
 
 class Detail : Activity() {
@@ -48,6 +53,11 @@ class Detail : Activity() {
         coffeeDescription = findViewById(R.id.coffee_description)
         likeButton = findViewById(R.id.like_button)
         buyNowButton = findViewById(R.id.buyNow)
+
+        LocalBroadcastManager.getInstance(this).registerReceiver(
+            orderStatusReceiver,
+            IntentFilter(WebSocketManager.ACTION_ORDER_STATUS)
+        )
 
         val returnButton: ImageButton = findViewById(R.id.return_button)
         returnButton.setOnClickListener {
@@ -172,5 +182,24 @@ class Detail : Activity() {
                 "Added $title successfully into cart"
             }
         }
+    }
+
+    private val orderStatusReceiver = object : BroadcastReceiver() {
+        override fun onReceive(context: Context, intent: Intent) {
+            val orderId = intent.getStringExtra(WebSocketManager.EXTRA_ORDER_ID)
+            val status = intent.getIntExtra(WebSocketManager.EXTRA_STATUS, -1)
+            Log.d("WebSocket", "Detail received status for Order $orderId: $status")
+            // TODO: Cập nhật UI hoặc chuyển màn hình
+
+            toast(this@Detail) {
+                "Your order status is changed"
+            }
+        }
+    }
+
+    override fun onDestroy() {
+        super.onDestroy()
+        LocalBroadcastManager.getInstance(this).unregisterReceiver(orderStatusReceiver)
+        WebSocketManager.getInstance(this).disconnect()
     }
 }

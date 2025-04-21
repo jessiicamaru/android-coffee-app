@@ -10,16 +10,24 @@ import android.widget.LinearLayout
 import android.widget.TextView
 import androidx.core.view.ViewCompat
 import android.animation.ValueAnimator
+import android.content.BroadcastReceiver
+import android.content.Context
+import android.content.IntentFilter
 import android.graphics.drawable.AnimationDrawable
 import android.graphics.drawable.ColorDrawable
 import android.graphics.drawable.LayerDrawable
+import android.util.Log
 import android.view.animation.TranslateAnimation
+import androidx.localbroadcastmanager.content.LocalBroadcastManager
 import org.maplibre.android.MapLibre
 import org.maplibre.android.geometry.LatLng
 import org.maplibre.android.maps.MapView
 import com.example.coffeeshop.R
 import com.example.coffeeshop.redux.action.Action
 import com.example.coffeeshop.redux.store.Store
+import com.example.coffeeshop.service.Service
+import com.example.coffeeshop.service.WebSocketManager
+import com.example.coffeeshop.utils.toast
 import org.json.JSONArray
 import org.maplibre.android.maps.MapLibreMap
 import org.maplibre.android.maps.OnMapReadyCallback
@@ -39,8 +47,10 @@ class Map : AppCompatActivity(), OnMapReadyCallback {
     private lateinit var status: TextView
     private lateinit var customerName: TextView
     private lateinit var timeRemaining: TextView
-
+    private var currentOrderId: String? = null
+    private var currentFee: Double? = null // Lưu fee để không phải tìm lại trong store
     private val store = Store.store
+    private val service = Service();
 
     @SuppressLint("MissingInflatedId")
     override fun onCreate(savedInstanceState: Bundle?) {
@@ -58,6 +68,11 @@ class Map : AppCompatActivity(), OnMapReadyCallback {
         mapView = findViewById(R.id.map_view)
         mapView.getMapAsync(this)
 
+        LocalBroadcastManager.getInstance(this).registerReceiver(
+            orderStatusReceiver,
+            IntentFilter(WebSocketManager.ACTION_ORDER_STATUS)
+        )
+
         pendingStat = findViewById(R.id.pending_stat)
         preparingStat = findViewById(R.id.preparing_stat)
         deliveringStat = findViewById(R.id.delivering_stat)
@@ -66,11 +81,21 @@ class Map : AppCompatActivity(), OnMapReadyCallback {
         timeRemaining = findViewById(R.id.time_remaining)
         status = findViewById(R.id.status)
 
-        val orderId = intent.getStringExtra("orderId")
+        currentOrderId = intent.getStringExtra("orderId")
         val statIntent = intent.getStringExtra("stat")
         val feeIntent = intent.getStringExtra("fee")
 
-        updateUI(orderId, statIntent, feeIntent)
+        // Lưu fee vào biến thành viên nếu có
+        if (feeIntent != null) {
+            currentFee = feeIntent.toDouble()
+        }
+        store.state.user?.let { service.getPendingOrder(it.uid) }
+
+        store.subscribe {
+            runOnUiThread {
+                updateUI(currentOrderId, statIntent, feeIntent)
+            }
+        }
     }
 
     @SuppressLint("SetTextI18n")
@@ -84,89 +109,105 @@ class Map : AppCompatActivity(), OnMapReadyCallback {
             fee = feeIntent.toDouble()
             customer = store.state.user?.displayName
         } else if (orderId != null) {
-            val order = store.state.ordersPending?.find { it.orderId == orderId } ?: return
+            val order = store.state.ordersPending.find { it.orderId == orderId }
+            if (order == null) {
+                Log.e("MapActivity", "Order not found in store.state.ordersPending for orderId: $orderId")
+                return
+            }
             stat = order.stat
-            fee = order.fee
-            customer = order.userInfo?.name
+            fee = order.fee // Sử dụng fee từ biến thành viên nếu không có trong store
+            customer = order.userInfo.name
         } else {
+            Log.e("MapActivity", "orderId is null, cannot update UI")
             return
         }
 
-        val distance = fee?.div(0.3)
-        val time = distance?.times(8)?.toInt()
+        val distance = fee.div(0.3)
+        val time = distance.times(8).toInt()
 
         customerName.text = customer ?: "Unknown"
+
+        // Reset trạng thái của tất cả LinearLayout trước khi áp dụng mới
         val stats = listOf(pendingStat, preparingStat, deliveringStat, completeStat)
+        stats.forEach { statView ->
+            statView.clearAnimation() // Xóa animation cũ
+            statView.setBackgroundColor(Color.TRANSPARENT) // Reset màu nền
+        }
+
+        // Áp dụng màu và hiệu ứng loading cho các trạng thái
         for (i in 0..stat.coerceAtMost(stats.size - 1)) {
             if (i != stat) {
                 stats[i].setBackgroundColor(Color.parseColor("#36C07E"))
-            } else applyLoadingEffect(stats[i])
+            } else {
+                applyLoadingEffect(stats[i])
+            }
         }
 
         when (stat) {
             0 -> {
                 status.text = "Pending"
-                timeRemaining.text = "${15 + (time ?: 0)} minutes left"
+                status.setTextColor(Color.parseColor("#000000")) // Màu mặc định
+                timeRemaining.text = "${15 + time} minutes left"
             }
-
             1 -> {
                 status.text = "Preparing"
                 status.setTextColor(Color.parseColor("#FFA955"))
-                timeRemaining.text = "${10 + (time ?: 0)} minutes left"
+                timeRemaining.text = "${10 + time} minutes left"
             }
-
             2 -> {
                 status.text = "Delivering"
                 status.setTextColor(Color.parseColor("#C67C4E"))
-                timeRemaining.text = "${time ?: 0} minutes left"
+                timeRemaining.text = "$time minutes left"
             }
-
             3 -> {
                 status.text = "Success"
                 status.setTextColor(Color.parseColor("#36C07E"))
                 timeRemaining.text = "Your order is arrived"
             }
+            4 -> {
+                status.text = "Cancelled"
+                status.setTextColor(Color.parseColor("#CF0F47"))
+                timeRemaining.text = "Your order is cancelled"
+            }
         }
     }
 
-
     private fun applyLoadingEffect(view: LinearLayout) {
-        // Tạo LayerDrawable: nền xám nhạt + thanh loading
+        // Tạo LayerDrawable: nền trong suốt + thanh loading
         val loadingBar = ColorDrawable(Color.parseColor("#36C07E")).apply {
             setBounds(0, 0, 50, view.height) // Thanh rộng 50dp
         }
-        val background = ColorDrawable(Color.TRANSPARENT) // Nền trong suốt
+        val background = ColorDrawable(Color.TRANSPARENT)
         val layerDrawable = LayerDrawable(arrayOf(background, loadingBar))
 
-        // Đảm bảo view đã được vẽ trước khi áp dụng animation
         view.post {
             view.background = layerDrawable
 
             // Tạo TranslateAnimation để di chuyển thanh loading từ trái sang phải
             val animation = TranslateAnimation(
-                -view.width.toFloat(),                      // fromXDelta: bắt đầu từ ngoài bên trái
+                -view.width.toFloat(), // fromXDelta: bắt đầu từ ngoài bên trái
                 0f, // toXDelta: di chuyển đến bên phải
-                0f,                        // fromYDelta
-                0f                         // toYDelta
+                0f, // fromYDelta
+                0f  // toYDelta
             ).apply {
-                duration = 1500 // 1.5 giây
-                repeatCount = TranslateAnimation.INFINITE // Lặp vô hạn
-                repeatMode = TranslateAnimation.RESTART // Bắt đầu lại từ đầu
+                duration = 1500
+                repeatCount = TranslateAnimation.INFINITE
+                repeatMode = TranslateAnimation.RESTART
             }
 
-            // Áp dụng animation cho layer thứ 1 (thanh loading)
             view.startAnimation(animation)
             animation.setAnimationListener(object : android.view.animation.Animation.AnimationListener {
                 override fun onAnimationStart(animation: android.view.animation.Animation?) {
-                    layerDrawable.setLayerInset(1, -50, 0, 0, 0) // Đặt lại vị trí ban đầu (ngoài bên trái)
+                    layerDrawable.setLayerInset(1, -50, 0, 0, 0)
                 }
                 override fun onAnimationEnd(animation: android.view.animation.Animation?) {}
                 override fun onAnimationRepeat(animation: android.view.animation.Animation?) {
-                    layerDrawable.setLayerInset(1, -50, 0, 0, 0) // Reset khi lặp
+                    layerDrawable.setLayerInset(1, -50, 0, 0, 0)
                 }
             })
         }
     }
+
     override fun onMapReady(map: MapLibreMap) {
         val key = "Vlq8AoHnyCUzBLQQ6wB5"
         val mapId = "streets-v2"
@@ -177,27 +218,36 @@ class Map : AppCompatActivity(), OnMapReadyCallback {
     }
 
     override fun onStart() {
-        super.onStart(); mapView.onStart()
+        super.onStart()
+        mapView.onStart()
     }
 
     override fun onResume() {
-        super.onResume(); mapView.onResume()
+        super.onResume()
+        mapView.onResume()
     }
 
     override fun onPause() {
-        super.onPause(); mapView.onPause()
+        super.onPause()
+        mapView.onPause()
     }
 
     override fun onStop() {
-        super.onStop(); mapView.onStop()
+        super.onStop()
+        mapView.onStop()
     }
 
+    @Deprecated("Deprecated in Java")
     override fun onLowMemory() {
-        super.onLowMemory(); mapView.onLowMemory()
+        super.onLowMemory()
+        mapView.onLowMemory()
     }
 
     override fun onDestroy() {
-        super.onDestroy(); mapView.onDestroy()
+        super.onDestroy()
+        mapView.onDestroy()
+        LocalBroadcastManager.getInstance(this).unregisterReceiver(orderStatusReceiver)
+        WebSocketManager.getInstance(this).disconnect()
     }
 
     override fun onSaveInstanceState(outState: Bundle) {
@@ -260,5 +310,35 @@ class Map : AppCompatActivity(), OnMapReadyCallback {
             .include(LatLng(maxLat, maxLng))
             .build()
         mapLibreMap.animateCamera(CameraUpdateFactory.newLatLngBounds(bounds, 100))
+    }
+
+    private val orderStatusReceiver = object : BroadcastReceiver() {
+        override fun onReceive(context: Context, intent: Intent) {
+            val receivedOrderId = intent.getStringExtra(WebSocketManager.EXTRA_ORDER_ID)
+            val newStatus = intent.getIntExtra(WebSocketManager.EXTRA_STATUS, -1)
+
+            Log.d("WebSocket", "Map received status for Order $receivedOrderId: $newStatus")
+
+            if (receivedOrderId != null && receivedOrderId == currentOrderId) {
+                Log.d("WebSocket", "Updated")
+
+                // Cập nhật trạng thái trong store.state.ordersPending
+                val updatedOrders = store.state.ordersPending.map { order ->
+                    if (order.orderId == receivedOrderId) {
+                        order.copy(stat = newStatus)
+                    } else {
+                        order
+                    }
+                }
+                store.dispatch(Action.SetOrders(ArrayList(updatedOrders)))
+
+                // Gọi updateUI với orderId hiện tại và status mới
+                updateUI(currentOrderId, newStatus.toString(), null)
+            } else {
+                toast(this@Map) {
+                    "Your order status is changed"
+                }
+            }
+        }
     }
 }
