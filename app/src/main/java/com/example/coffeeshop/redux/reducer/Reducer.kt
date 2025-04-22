@@ -13,6 +13,7 @@ class Reducer {
                     Log.d("SHIT_FAV", "redux: ${action.likeCoffees}")
                     state.copy(likeCoffees = action.likeCoffees)
                 }
+
                 is Action.SetAddress -> state.copy(address = action.address)
                 is Action.SetCategories -> state.copy(categories = action.categories)
                 is Action.SelectCategory -> {
@@ -37,6 +38,7 @@ class Reducer {
                     }
                     state.copy(orders = ArrayList(updatedOrders))
                 }
+
                 is Action.SetLocation -> state.copy(location = action.location)
                 is Action.SaveUser -> state.copy(user = action.user)
                 is Action.RefreshOrders -> state.copy(orders = ArrayList(state.orders))
@@ -63,8 +65,10 @@ class Reducer {
                         when {
                             coffee.coffeeId == action.coffeeId && coffee.size == action.size && coffee.quantity > 1 ->
                                 coffee.copy(quantity = coffee.quantity - 1)
+
                             coffee.coffeeId == action.coffeeId && coffee.size == action.size && coffee.quantity == 1 ->
                                 null
+
                             else -> coffee
                         }
                     }
@@ -78,11 +82,10 @@ class Reducer {
                     state.copy(historyList = ArrayList(updateHistory))
                 }
 
-                is Action.SetSocketResponse -> {
-                    val notifications = state.notifications;
-                    notifications.add(action.socketResponse)
-
-                    state.copy(notifications = ArrayList(notifications))
+                is Action.SetNotifications -> {
+                    Log.d("SetNotifications", "${action.socketResponse}")
+                    val updatedNotifications = state.notifications + action.socketResponse
+                    state.copy(notifications = ArrayList(updatedNotifications))
                 }
 
                 is Action.RemoveHistory -> {
@@ -94,6 +97,18 @@ class Reducer {
 
                 is Action.SetMapData -> {
                     state.copy(mapData = action.mapData)
+                }
+
+                is Action.UpdateStat -> {
+                    Log.d("REDUX", "UpdateStat")
+                    val orders = state.ordersPending.map { order ->
+                        if (order.orderId == action.socketResponse.orderId) {
+                            order.copy(stat = action.socketResponse.status)
+                        } else
+                            order
+                    }
+
+                    state.copy(ordersPending = ArrayList(orders))
                 }
 
                 is Action.RemoveCart -> state.copy(orders = arrayListOf())

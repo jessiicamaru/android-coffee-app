@@ -94,6 +94,11 @@ class Cart : Activity() {
                     overridePendingTransition(0, 0)
                     return@setOnItemSelectedListener true
                 }
+                R.id.nav_account -> {
+                    startActivity(Intent(this, Account::class.java))
+                    overridePendingTransition(0, 0)
+                    return@setOnItemSelectedListener true
+                }
                 else -> false
             }
         }

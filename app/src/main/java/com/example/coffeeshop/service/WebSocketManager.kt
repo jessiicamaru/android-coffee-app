@@ -93,6 +93,11 @@ class WebSocketManager private constructor() {
                     val orderId = jsonObject.getString("orderId")
                     val status = jsonObject.getInt("status")
 
+                    store.dispatch(Action.SetNotifications(SocketResponse(
+                        orderId = orderId,
+                        status = status
+                    )))
+
                     // Gửi broadcast tới các activity
                     val intent = Intent(ACTION_ORDER_STATUS).apply {
                         putExtra(EXTRA_ORDER_ID, orderId)

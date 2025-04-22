@@ -453,6 +453,18 @@
                 android:textColor="@color/white"
                 />
 
+            <Button
+                android:id="@+id/order_arrived"
+                android:layout_marginTop="16dp"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:background="@drawable/button_primary"
+                android:backgroundTint="#36C07E"
+                android:text="Order arrived"
+                android:textAllCaps="false"
+                android:textColor="@color/white"
+                />
+
         </LinearLayout>
 
 

@@ -8,8 +8,10 @@ import android.content.Context
 import android.content.Intent
 import android.content.IntentFilter
 import android.graphics.Color
+import android.graphics.drawable.Drawable
 import android.os.Bundle
 import android.util.Log
+import android.view.View
 import android.widget.Button
 import android.widget.ImageButton
 import android.widget.TextView
@@ -45,6 +47,8 @@ class OrderDetail : Activity() {
     private lateinit var coffeeRecyclerView: RecyclerView
     private lateinit var ogFee: TextView
     private lateinit var proFee: TextView
+    private lateinit var orderArrived: Button
+    private var currentOrderId: String? = null;
     private val service = Service();
     private val store = Store.store
 
@@ -65,6 +69,7 @@ class OrderDetail : Activity() {
         orderIdTV = findViewById(R.id.order_id)
         ogFee = findViewById(R.id.og_fee)
         proFee = findViewById(R.id.pro_fee)
+        orderArrived = findViewById(R.id.order_arrived)
 
         val returnButton: ImageButton = findViewById(R.id.return_button)
         returnButton.setOnClickListener {
@@ -83,28 +88,28 @@ class OrderDetail : Activity() {
         coffeeRecyclerView.setHasFixedSize(true)
 
         store.subscribe {
-            updateUI(store.state)
+            updateUI(store.state, null)
         }
         store.dispatch(Action.RefreshOrdersPending)
 
-        val orderId = intent.getStringExtra("orderId")
-        val orderPending = store.state.ordersPending.find { it.orderId == orderId }
+        currentOrderId = intent.getStringExtra("orderId")
+        val orderPending = store.state.ordersPending.find { it.orderId == currentOrderId }
 
         if (orderPending != null) {
-            if (orderPending.stat != 4)
+            if (orderPending.stat >= 3)
                 getMap(orderPending)
         }
 
         openMap.setOnClickListener {
             val intent = Intent(this, Map::class.java).apply {
-                putExtra("orderId", orderId)
+                putExtra("orderId", currentOrderId)
             }
             startActivity(intent)
         }
     }
 
     @SuppressLint("SetTextI18n")
-    private fun updateUI(state: AppState) {
+    private fun updateUI(state: AppState, statRes: Int?) {
         val orderId = intent.getStringExtra("orderId")
         val orderPending = state.ordersPending.find { it.orderId == orderId }
 
@@ -122,31 +127,40 @@ class OrderDetail : Activity() {
         ogFee.text = "${df.format(orderPending?.fee?.times(1.3))}$"
         proFee.text = "${df.format(orderPending?.fee)}$"
 
-        val stat = orderPending?.stat ?: 0
+        val stat = statRes?: orderPending?.stat ?: 0
 
         when (stat) {
             0 -> {
                 status.text = "Pending"
+                orderArrived.visibility = View.INVISIBLE
             }
 
             1 -> {
                 status.text = "Preparing"
                 status.setTextColor(Color.parseColor("#FFA955"))
+                orderArrived.visibility = View.INVISIBLE
             }
 
             2 -> {
                 status.text = "Delivering"
                 status.setTextColor(Color.parseColor("#C67C4E"))
+                orderArrived.visibility = View.VISIBLE
+                openMap.setTextColor(Color.BLACK)
+                openMap.setBackgroundResource(R.drawable.button_non_primary)
             }
 
             3 -> {
                 status.text = "Success"
                 status.setTextColor(Color.parseColor("#36C07E"))
+                orderArrived.visibility = View.INVISIBLE
+                openMap.visibility = View.INVISIBLE
             }
 
             4 -> {
                 status.text = "Cancelled"
-                status.setTextColor(Color.parseColor("#CF0F47"))
+                status.setTextColor(Color.parseColor(""))
+                orderArrived.visibility = View.INVISIBLE
+                openMap.visibility = View.INVISIBLE
             }
             else -> status.text = ""
         }
@@ -193,6 +207,10 @@ class OrderDetail : Activity() {
             val status = intent.getIntExtra(WebSocketManager.EXTRA_STATUS, -1)
             Log.d("WebSocket", "OrderDetail received status for Order $orderId: $status")
             // TODO: Cập nhật UI hoặc chuyển màn hình
+
+            if (currentOrderId != null && orderId == currentOrderId) {
+                updateUI(store.state, status)
+            }
 
             toast(this@OrderDetail) {
                 "Your order status is changed"

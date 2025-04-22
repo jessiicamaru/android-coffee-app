@@ -10,6 +10,7 @@ import android.os.Bundle
 import android.text.Editable
 import android.text.TextWatcher
 import android.util.Log
+import android.view.View
 import android.widget.EditText
 import android.widget.LinearLayout
 import android.widget.TextView
@@ -114,6 +115,11 @@ class Home : Activity() {
                     overridePendingTransition(0, 0)
                     return@setOnItemSelectedListener true
                 }
+                R.id.nav_account -> {
+                    startActivity(Intent(this, Account::class.java))
+                    overridePendingTransition(0, 0)
+                    return@setOnItemSelectedListener true
+                }
                 else -> false
             }
         }
@@ -126,6 +132,16 @@ class Home : Activity() {
         // Cập nhật UI dựa trên state hiện tại
         coffeeRecyclerView.adapter = CoffeeItemAdapter(state.coffees, this)
         categoryRecyclerView.adapter = CategoryItemAdapter(state.categories)
+
+        Log.d("NotAmount", "${state.notifications.size}")
+
+        if (state.notifications.size == 0) {
+            notificationAmount.visibility = View.INVISIBLE
+        } else {
+            notificationAmount.visibility = View.VISIBLE
+            notificationAmount.text = "${state.notifications.size}";
+        }
+
 
         locationText.text = store.state.address
 

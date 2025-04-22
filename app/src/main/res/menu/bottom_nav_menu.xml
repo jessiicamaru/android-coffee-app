@@ -19,7 +19,7 @@
         android:icon="@drawable/ic_list"
         android:title="Order list" />
     <item
-        android:id="@+id/nav_notification"
-        android:icon="@drawable/ic_notification"
-        android:title="Notification" />
+        android:id="@+id/nav_account"
+        android:icon="@drawable/ic_account"
+        android:title="Account" />
 </menu>

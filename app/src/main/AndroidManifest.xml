@@ -74,6 +74,9 @@
         <activity
             android:name=".activity.OrderDetail"
             android:theme="@style/Theme.AppCompat.Light.NoActionBar" />
+        <activity
+            android:name=".activity.Account"
+            android:theme="@style/Theme.AppCompat.Light.NoActionBar" />
 
     </application>
 
