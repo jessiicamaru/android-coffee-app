@@ -11,6 +11,7 @@ import com.example.coffeeshop.data_class.Coffee
 import com.example.coffeeshop.data_class.Likes
 import com.example.coffeeshop.data_class.OrderRequest
 import com.example.coffeeshop.data_class.PendingOrder
+import com.example.coffeeshop.data_class.UpdateStatusPayload
 import com.example.coffeeshop.data_class.User
 import com.example.coffeeshop.redux.action.Action
 import com.example.coffeeshop.redux.store.Store
@@ -209,6 +210,29 @@ class Service {
             }
 
             override fun onFailure(call: Call<Int>, t: Throwable) {
+                Log.e("Retrofit", "create order failed: ${t.message}")
+
+            }
+        })
+    }
+
+    fun updateOrderStatus(updateStatusPayload: UpdateStatusPayload) {
+        val api = Retrofit.Builder()
+            .baseUrl(BASE_URL)
+            .addConverterFactory(GsonConverterFactory.create())
+            .build().create(OrderApi::class.java)
+
+
+        api.updateOrderStatus(updateStatusPayload).enqueue(object : Callback<String> {
+            override fun onResponse(call: Call<String>, response: Response<String>) {
+                if (response.isSuccessful) {
+                    Log.d("Retrofit", "create order successfully! Response: ${response.body()}")
+                } else {
+                    Log.e("Retrofit", "create order failed: ${response.errorBody()}")
+                }
+            }
+
+            override fun onFailure(call: Call<String>, t: Throwable) {
                 Log.e("Retrofit", "create order failed: ${t.message}")
 
             }

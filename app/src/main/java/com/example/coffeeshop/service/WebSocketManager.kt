@@ -93,17 +93,22 @@ class WebSocketManager private constructor() {
                     val orderId = jsonObject.getString("orderId")
                     val status = jsonObject.getInt("status")
 
-                    store.dispatch(Action.SetNotifications(SocketResponse(
-                        orderId = orderId,
-                        status = status
-                    )))
+                    store.dispatch(
+                        Action.SetNotifications(
+                            SocketResponse(
+                                orderId = orderId,
+                                status = status
+                            )
+                        )
+                    )
 
-                    // Gửi broadcast tới các activity
-                    val intent = Intent(ACTION_ORDER_STATUS).apply {
-                        putExtra(EXTRA_ORDER_ID, orderId)
-                        putExtra(EXTRA_STATUS, status)
+                    handler.post {
+                        val intent = Intent(ACTION_ORDER_STATUS).apply {
+                            putExtra(EXTRA_ORDER_ID, orderId)
+                            putExtra(EXTRA_STATUS, status)
+                        }
+                        LocalBroadcastManager.getInstance(applicationContext).sendBroadcast(intent)
                     }
-                    LocalBroadcastManager.getInstance(applicationContext).sendBroadcast(intent)
                 } catch (e: JSONException) {
                     Log.e("WebSocket", "JSON parsing error: ${e.message}")
                 }

@@ -6,6 +6,7 @@ import android.content.BroadcastReceiver
 import android.content.Context
 import android.content.Intent
 import android.content.IntentFilter
+import android.graphics.Color
 import android.os.Bundle
 import android.util.Log
 import android.widget.Button
@@ -37,6 +38,7 @@ import org.json.JSONObject
 import java.io.IOException
 import java.text.DecimalFormat
 import java.util.UUID
+import java.util.concurrent.TimeUnit
 
 class OnOrder : Activity() {
 
@@ -50,7 +52,7 @@ class OnOrder : Activity() {
 
     private val service = Service()
     private val store = Store.store
-    private var shippingFee: Double = 0.0
+    private var shippingFee: Double = 1.0
     private var price: Double = 0.0
 
     @SuppressLint("SetTextI18n", "DefaultLocale")
@@ -83,6 +85,11 @@ class OnOrder : Activity() {
             orderStatusReceiver,
             IntentFilter(WebSocketManager.ACTION_ORDER_STATUS)
         )
+
+        orderButton.isClickable = false;
+        orderButton.isEnabled = false;
+        orderButton.setBackgroundResource(R.drawable.button_non_primary)
+        orderButton.setTextColor(Color.BLACK)
 
         orderButton.setOnClickListener {
             store.state.user?.let { user ->
@@ -173,26 +180,41 @@ class OnOrder : Activity() {
         coffeeRecyclerView.adapter = CoffeeItemOrderAdapter(ArrayList(state.orders), this)
     }
 
-    private fun getDistance() {
+    private fun getDistance(retryCount: Int = 0, maxRetries: Int = 3) {
         val url =
             "https://router.project-osrm.org/route/v1/driving/108.2561075672051,15.990506012096326;${store.state.location?.longitude},${store.state.location?.latitude}?geometries=geojson"
 
         Log.d("Route", url)
 
         val request = Request.Builder().url(url).build()
-        val client = OkHttpClient()
+        val client = OkHttpClient.Builder()
+            .connectTimeout(30, TimeUnit.SECONDS)
+            .readTimeout(30, TimeUnit.SECONDS)
+            .writeTimeout(30, TimeUnit.SECONDS)
+            .build()
 
         client.newCall(request).enqueue(object : Callback {
             override fun onFailure(call: Call, e: IOException) {
                 Log.e("Route", "Lỗi khi tải tuyến đường: ${e.message}")
-                runOnUiThread {
-                    ogFee.text = "Error"
-                    proFee.text = "Error"
+                if (retryCount < maxRetries) {
+                    Log.d("Route", "Thử lại lần ${retryCount + 1}/$maxRetries")
+                    getDistance(retryCount + 1, maxRetries) // Thử lại
+                } else {
+                    runOnUiThread {
+                        ogFee.text = "Error"
+                        proFee.text = "Error"
+                    }
                 }
             }
 
             @SuppressLint("SetTextI18n")
             override fun onResponse(call: Call, response: Response) {
+                runOnUiThread {
+                    orderButton.isClickable = true;
+                    orderButton.isEnabled = true;
+                    orderButton.setBackgroundResource(R.drawable.button_primary)
+                    orderButton.setTextColor(Color.WHITE)
+                }
                 response.body?.let { responseBody ->
                     val responseString = responseBody.string()
                     val jsonObject = JSONObject(responseString)
@@ -228,8 +250,10 @@ class OnOrder : Activity() {
             Log.d("WebSocket", "OnOrder received status for Order $orderId: $status")
             // TODO: Cập nhật UI hoặc chuyển màn hình
 
-            toast(this@OnOrder) {
-                "Your order status is changed"
+            runOnUiThread {
+                toast(this@OnOrder) {
+                    "Your order status is changed"
+                }
             }
         }
     }

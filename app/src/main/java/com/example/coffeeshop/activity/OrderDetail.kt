@@ -22,6 +22,8 @@ import com.example.coffeeshop.R
 import com.example.coffeeshop.adapter.CoffeeItemOrderAdapter
 import com.example.coffeeshop.adapter.CoffeeItemOrderPendingAdapter
 import com.example.coffeeshop.data_class.PendingOrder
+import com.example.coffeeshop.data_class.SocketResponse
+import com.example.coffeeshop.data_class.UpdateStatusPayload
 import com.example.coffeeshop.redux.action.Action
 import com.example.coffeeshop.redux.data_class.AppState
 import com.example.coffeeshop.redux.store.Store
@@ -36,6 +38,7 @@ import okhttp3.Response
 import org.json.JSONObject
 import java.io.IOException
 import java.text.DecimalFormat
+import java.util.concurrent.TimeUnit
 
 class OrderDetail : Activity() {
     private lateinit var name: TextView
@@ -88,7 +91,9 @@ class OrderDetail : Activity() {
         coffeeRecyclerView.setHasFixedSize(true)
 
         store.subscribe {
-            updateUI(store.state, null)
+            runOnUiThread {
+                updateUI(store.state, null)
+            }
         }
         store.dispatch(Action.RefreshOrdersPending)
 
@@ -106,13 +111,24 @@ class OrderDetail : Activity() {
             }
             startActivity(intent)
         }
+
+        orderArrived.setOnClickListener {
+            runOnUiThread {
+                service.updateOrderStatus(UpdateStatusPayload(
+                    userId = store.state.user?.uid ?: "",
+                    orderId = currentOrderId ?: "",
+                    status = 3,
+                ))
+            }
+        }
     }
+
+
 
     @SuppressLint("SetTextI18n")
     private fun updateUI(state: AppState, statRes: Int?) {
         val orderId = intent.getStringExtra("orderId")
         val orderPending = state.ordersPending.find { it.orderId == orderId }
-
         Log.d("UPDATED", "$orderPending")
 
         val coffees = orderPending?.coffees ?: arrayListOf();
@@ -158,7 +174,7 @@ class OrderDetail : Activity() {
 
             4 -> {
                 status.text = "Cancelled"
-                status.setTextColor(Color.parseColor(""))
+                status.setTextColor(Color.parseColor("#CF0F47"))
                 orderArrived.visibility = View.INVISIBLE
                 openMap.visibility = View.INVISIBLE
             }
@@ -166,21 +182,28 @@ class OrderDetail : Activity() {
         }
 
         coffeeRecyclerView.adapter = CoffeeItemOrderPendingAdapter(ArrayList(coffees), this, orderId ?: "")
-
     }
 
-    private fun getMap(order: PendingOrder) {
+    private fun getMap(order: PendingOrder, retryCount: Int = 0, maxRetries: Int = 3) {
         val url =
             "https://router.project-osrm.org/route/v1/driving/108.2561075672051,15.990506012096326;${order.longitude},${order.latitude}?geometries=geojson"
 
         Log.d("Route", url)
 
         val request = Request.Builder().url(url).build()
-        val client = OkHttpClient()
+        val client = OkHttpClient.Builder()
+            .connectTimeout(30, TimeUnit.SECONDS)
+            .readTimeout(30, TimeUnit.SECONDS)
+            .writeTimeout(30, TimeUnit.SECONDS)
+            .build()
 
         client.newCall(request).enqueue(object : Callback {
             override fun onFailure(call: Call, e: IOException) {
                 Log.e("Route", "Lỗi khi tải tuyến đường: ${e.message}")
+                if (retryCount < maxRetries) {
+                    Log.d("Route", "Thử lại lần ${retryCount + 1}/$maxRetries")
+                    getMap(order,retryCount + 1, maxRetries) // Thử lại
+                }
             }
 
             @SuppressLint("SetTextI18n")
@@ -208,13 +231,16 @@ class OrderDetail : Activity() {
             Log.d("WebSocket", "OrderDetail received status for Order $orderId: $status")
             // TODO: Cập nhật UI hoặc chuyển màn hình
 
-            if (currentOrderId != null && orderId == currentOrderId) {
-                updateUI(store.state, status)
+
+            runOnUiThread {
+                if (currentOrderId != null && orderId == currentOrderId) {
+                    updateUI(store.state, status)
+                }
+                toast(this@OrderDetail) {
+                    "Your order status is changed"
+                }
             }
 
-            toast(this@OrderDetail) {
-                "Your order status is changed"
-            }
         }
     }
 
