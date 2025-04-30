@@ -134,6 +134,7 @@ class OnOrder : Activity() {
                             putExtra("stat", 0)
                             putExtra("fee", shippingFee)
                             putExtra("orderId", orderId)
+                            putExtra("source", "OnOrder")
                         }
                         startActivity(intent)
                     }

@@ -72,21 +72,22 @@
                             android:layout_height="wrap_content"
                             android:fontFamily="@font/sora_regular"
                             android:text="Update premium"
-                            android:textColor="#FF6200EE"
+                            android:textColor="#C67C4E"
                             android:textSize="14sp" />
 
                     </LinearLayout>
 
                     <Button
+                        android:id="@+id/logout_button"
                         android:layout_width="wrap_content"
                         android:layout_height="wrap_content"
                         android:background="@drawable/only_rounded"
-                        android:backgroundTint="#faebe0"
+                        android:backgroundTint="#C67C4E"
                         android:fontFamily="@font/sora_semibold"
                         android:text="Log out"
                         android:textAlignment="center"
                         android:textAllCaps="false"
-                        android:textColor="#000000" />
+                        android:textColor="@color/white" />
                 </LinearLayout>
 
                 <LinearLayout
@@ -252,7 +253,7 @@
                                 android:paddingTop="8dp"
                                 android:paddingBottom="8dp"
                                 android:text="New"
-                                android:textColor="#CF0F47"
+                                android:textColor="#C67C4E"
                                 android:fontFamily="@font/sora_bold"
                                 tools:ignore="MissingConstraints" />
                             <ImageView
@@ -357,7 +358,7 @@
                                 android:paddingTop="8dp"
                                 android:paddingBottom="8dp"
                                 android:text="New"
-                                android:textColor="#CF0F47"
+                                android:textColor="#C67C4E"
                                 android:fontFamily="@font/sora_bold"
                                 tools:ignore="MissingConstraints" />
                             <ImageView

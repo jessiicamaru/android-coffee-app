@@ -24,6 +24,25 @@ class Login : Activity() {
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
+
+        mAuth = Firebase.auth
+        val currentUser = mAuth.currentUser
+        val sharedPreferences = getSharedPreferences("CoffeeShopPrefs", MODE_PRIVATE)
+        val uid = sharedPreferences.getString("uid", null)
+Log.d("SharePref", "$uid");
+        if (currentUser != null && uid != null && currentUser.uid == uid) {
+            // Nếu có user đang đăng nhập và uid khớp, chuyển thẳng đến HomeActivity
+            val intent = Intent(this, Home::class.java)
+            startActivity(intent)
+            finish()
+            return
+        } else if (uid != null) {
+            // Nếu có uid nhưng không có user đang đăng nhập, xóa uid và yêu cầu đăng nhập lại
+            val editor = sharedPreferences.edit()
+            editor.remove("uid")
+            editor.apply()
+        }
+
         setContentView(R.layout.login)
 
         mAuth = Firebase.auth
@@ -103,6 +122,13 @@ class Login : Activity() {
                             phoneNumber = it.phoneNumber ?: "Unknown",
                             photoUrl = it.photoUrl?.toString() ?: ""
                         )
+
+                        val sharedPreferences = getSharedPreferences("CoffeeShopPrefs", MODE_PRIVATE)
+                        val editor = sharedPreferences.edit()
+                        editor.putString("uid", it.uid)
+                        editor.apply()
+                        Log.d("SharePref", it.uid);
+
 
                         service.postToSaveUser(userData) { success ->
                             if (success) {

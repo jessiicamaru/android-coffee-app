@@ -10,6 +10,7 @@ import android.widget.LinearLayout
 import android.widget.TextView
 import androidx.core.view.ViewCompat
 import android.animation.ValueAnimator
+import android.app.Activity
 import android.content.BroadcastReceiver
 import android.content.Context
 import android.content.IntentFilter
@@ -58,11 +59,28 @@ class Map : AppCompatActivity(), OnMapReadyCallback {
         MapLibre.getInstance(this)
         setContentView(R.layout.map)
 
+        store.dispatch(Action.AddHistory(this))
+
+        currentOrderId = intent.getStringExtra("orderId")
+        val statIntent = intent.getStringExtra("stat")
+        val feeIntent = intent.getStringExtra("fee")
+
         val returnButton: LinearLayout = findViewById(R.id.return_button)
         returnButton.setOnClickListener {
             store.dispatch(Action.RemoveHistory)
-            val intent = Intent(this, Home::class.java)
-            startActivity(intent)
+            val source = intent.getStringExtra("source")
+            Log.d("source", "$source");
+            if (source == "OnOrder") {
+                val intent = Intent(this, Home::class.java)
+                intent.flags = Intent.FLAG_ACTIVITY_CLEAR_TOP or Intent.FLAG_ACTIVITY_SINGLE_TOP
+                startActivity(intent)
+                finish()
+            } else {
+                val intent = Intent(this, store.state.historyList.last()::class.java).apply {
+                    putExtra("orderId", currentOrderId)
+                }
+                startActivity(intent)
+            }
         }
 
         mapView = findViewById(R.id.map_view)
@@ -80,10 +98,6 @@ class Map : AppCompatActivity(), OnMapReadyCallback {
         customerName = findViewById(R.id.customer_name)
         timeRemaining = findViewById(R.id.time_remaining)
         status = findViewById(R.id.status)
-
-        currentOrderId = intent.getStringExtra("orderId")
-        val statIntent = intent.getStringExtra("stat")
-        val feeIntent = intent.getStringExtra("fee")
 
         // Lưu fee vào biến thành viên nếu có
         if (feeIntent != null) {

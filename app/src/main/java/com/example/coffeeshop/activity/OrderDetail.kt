@@ -101,13 +101,19 @@ class OrderDetail : Activity() {
         val orderPending = store.state.ordersPending.find { it.orderId == currentOrderId }
 
         if (orderPending != null) {
-            if (orderPending.stat >= 3)
+            if (orderPending.stat <= 3)
                 getMap(orderPending)
         }
+
+        openMap.setBackgroundResource(R.drawable.button_non_primary)
+        openMap.setTextColor(Color.BLACK)
+        openMap.isEnabled = false
+        openMap.isClickable = false
 
         openMap.setOnClickListener {
             val intent = Intent(this, Map::class.java).apply {
                 putExtra("orderId", currentOrderId)
+                putExtra("source", "OrderDetail")
             }
             startActivity(intent)
         }
@@ -213,10 +219,15 @@ class OrderDetail : Activity() {
                     val jsonObject = JSONObject(responseString)
                     val routes = jsonObject.getJSONArray("routes")
                     val route = routes.getJSONObject(0)
-
+                    Log.d("Route", "DM")
                     val geometry = route.getJSONObject("geometry").getJSONArray("coordinates")
 
                     runOnUiThread {
+                        openMap.setBackgroundResource(R.drawable.button_primary)
+                        openMap.setTextColor(Color.WHITE)
+                        openMap.isEnabled = true
+                        openMap.isClickable = true
+
                         store.dispatch(Action.SetMapData(geometry))
                     }
                 }
