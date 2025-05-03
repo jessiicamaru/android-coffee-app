@@ -77,6 +77,9 @@
         <activity
             android:name=".activity.Account"
             android:theme="@style/Theme.AppCompat.Light.NoActionBar" />
+        <activity
+            android:name=".activity.Promotion"
+            android:theme="@style/Theme.AppCompat.Light.NoActionBar" />
 
     </application>
 

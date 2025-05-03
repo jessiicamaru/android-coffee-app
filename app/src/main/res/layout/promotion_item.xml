@@ -1,0 +1,76 @@
+<?xml version="1.0" encoding="utf-8"?>
+<androidx.cardview.widget.CardView
+    xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:app="http://schemas.android.com/apk/res-auto"
+    android:layout_width="match_parent"
+    android:layout_height="wrap_content"
+    android:layout_margin="8dp"
+    app:cardCornerRadius="8dp"
+    app:cardElevation="4dp">
+
+    <androidx.constraintlayout.widget.ConstraintLayout
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:padding="16dp">
+
+        <!-- Icon bên trái -->
+        <ImageView
+            android:id="@+id/ivPromotionIcon"
+            android:layout_width="40dp"
+            android:layout_height="40dp"
+            android:contentDescription="Promotion Icon"
+            android:scaleType="fitCenter"
+            app:layout_constraintStart_toStartOf="parent"
+            app:layout_constraintTop_toTopOf="parent"
+            app:layout_constraintBottom_toBottomOf="parent" />
+
+        <!-- Nội dung bên phải -->
+        <LinearLayout
+            android:id="@+id/llPromotionContent"
+            android:layout_width="0dp"
+            android:layout_height="wrap_content"
+            android:orientation="vertical"
+            app:layout_constraintStart_toEndOf="@id/ivPromotionIcon"
+            app:layout_constraintEnd_toEndOf="parent"
+            app:layout_constraintTop_toTopOf="parent"
+            app:layout_constraintBottom_toBottomOf="parent"
+            android:paddingStart="16dp">
+
+            <!-- Promotion Code -->
+            <TextView
+                android:id="@+id/tvPromotionCode"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:text="Code: PROMO123"
+                android:textSize="16sp"
+                android:textStyle="bold" />
+
+            <!-- Expiration Date -->
+            <TextView
+                android:id="@+id/tvExpirationDate"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:text="Expires: 2025-05-10"
+                android:textSize="14sp"
+                android:layout_marginTop="4dp" />
+
+            <!-- Type -->
+            <TextView
+                android:id="@+id/tvPromotionType"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:text="Type: Discount"
+                android:textSize="14sp"
+                android:layout_marginTop="4dp" />
+
+        </LinearLayout>
+        <CheckBox
+            android:id="@+id/cbSelectPromotion"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            app:layout_constraintBottom_toBottomOf="@id/llPromotionContent"
+            app:layout_constraintEnd_toEndOf="parent"
+            app:layout_constraintTop_toTopOf="@id/llPromotionContent" />
+    </androidx.constraintlayout.widget.ConstraintLayout>
+
+</androidx.cardview.widget.CardView>

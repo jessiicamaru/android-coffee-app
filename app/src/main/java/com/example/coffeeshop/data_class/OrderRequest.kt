@@ -7,9 +7,12 @@ data class OrderRequest(
     val address: String,
     val total: Double,
     val fee: Double,
+    val originalTotal: Double,
+    val originalFee: Double,
     val longitude: Double,
     val latitude: Double,
-    val note: String
+    val note: String,
+    val promotion: List<Promotion> ?= listOf(),
 )
 
 

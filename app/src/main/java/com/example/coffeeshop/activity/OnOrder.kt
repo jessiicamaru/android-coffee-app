@@ -10,6 +10,7 @@ import android.graphics.Color
 import android.os.Bundle
 import android.util.Log
 import android.widget.Button
+import android.widget.GridLayout
 import android.widget.ImageButton
 import android.widget.RadioButton
 import android.widget.RadioGroup
@@ -22,6 +23,7 @@ import com.example.coffeeshop.adapter.CoffeeItemOrderAdapter
 import com.example.coffeeshop.data_class.CoffeeRequest
 import com.example.coffeeshop.data_class.OrderRequest
 import com.example.coffeeshop.data_class.PendingOrder
+import com.example.coffeeshop.activity.Promotion
 import com.example.coffeeshop.data_class.UserInfo
 import com.example.coffeeshop.redux.action.Action
 import com.example.coffeeshop.redux.data_class.AppState
@@ -49,7 +51,8 @@ class OnOrder : Activity() {
     private lateinit var orderButton: Button
     private lateinit var ogFee: TextView
     private lateinit var proFee: TextView
-
+    private lateinit var returnButton: ImageButton
+    private lateinit var openPromotion: GridLayout
     private val service = Service()
     private val store = Store.store
     private var shippingFee: Double = 1.0
@@ -67,13 +70,14 @@ class OnOrder : Activity() {
         coffeeRecyclerView.layoutManager = GridLayoutManager(this, 1)
         coffeeRecyclerView.setHasFixedSize(true)
 
-        val returnButton: ImageButton = findViewById(R.id.return_button)
+        returnButton = findViewById(R.id.return_button)
         returnButton.setOnClickListener {
             store.dispatch(Action.RemoveHistory)
             val intent = Intent(this, store.state.historyList.last()::class.java)
             startActivity(intent)
         }
 
+        openPromotion = findViewById(R.id.open_promotion)
         totalAmount = findViewById(R.id.total_amount)
         name = findViewById(R.id.name)
         address = findViewById(R.id.adress)
@@ -85,6 +89,12 @@ class OnOrder : Activity() {
             orderStatusReceiver,
             IntentFilter(WebSocketManager.ACTION_ORDER_STATUS)
         )
+
+        openPromotion.setOnClickListener {
+            val intent = Intent(this, Promotion::class.java)
+            startActivity(intent)
+        }
+
 
         orderButton.isClickable = false;
         orderButton.isEnabled = false;
@@ -120,7 +130,10 @@ class OnOrder : Activity() {
                                     fee = shippingFee,
                                     longitude = store.state.location?.longitude ?: 0.0,
                                     latitude = store.state.location?.latitude ?: 0.0,
-                                    note = ""
+                                    note = "",
+                                    originalTotal = 1.0,
+                                    originalFee = 1.0,
+                                    promotion = arrayListOf()
                                 )
                             )
                         }
@@ -150,9 +163,9 @@ class OnOrder : Activity() {
                     radioButton?.let {
                         it.setBackgroundResource(R.drawable.radio_button)
                         if (it.id == checkedId) {
-                            it.setTextColor(android.graphics.Color.WHITE)
+                            it.setTextColor(Color.WHITE)
                         } else {
-                            it.setTextColor(android.graphics.Color.BLACK)
+                            it.setTextColor(Color.BLACK)
                         }
                     }
                 }
@@ -178,6 +191,15 @@ class OnOrder : Activity() {
         totalAmount.text = "${String.format("%.2f", price).toDouble()}$"
         name.text = state.user?.displayName ?: "Jl. Kpg Sutoyo"
         address.text = state.address ?: "Kpg. Sutoyo No. 620, Bilzen, Tanjungbalai."
+
+        if (state.orders.isEmpty()) {
+            val intent = Intent(this, Home::class.java) // Thay HomeActivity bằng tên thực tế
+            intent.flags = Intent.FLAG_ACTIVITY_CLEAR_TOP or Intent.FLAG_ACTIVITY_SINGLE_TOP
+            startActivity(intent)
+            this.finish()
+            return
+        }
+
         coffeeRecyclerView.adapter = CoffeeItemOrderAdapter(ArrayList(state.orders), this)
     }
 

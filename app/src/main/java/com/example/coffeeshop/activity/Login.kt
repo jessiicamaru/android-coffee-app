@@ -29,8 +29,42 @@ class Login : Activity() {
         val currentUser = mAuth.currentUser
         val sharedPreferences = getSharedPreferences("CoffeeShopPrefs", MODE_PRIVATE)
         val uid = sharedPreferences.getString("uid", null)
-Log.d("SharePref", "$uid");
+        Log.d("SharePref", "$uid");
         if (currentUser != null && uid != null && currentUser.uid == uid) {
+
+            val user = mAuth.currentUser
+            user?.let {
+                Log.d("FIREBASE_USER", """
+                        🟢 Đăng nhập thành công
+                        🔹 UID: ${it.uid}
+                        🔹 Display Name: ${it.displayName}
+                        🔹 Email: ${it.email}
+                        🔹 Photo URL: ${it.photoUrl}
+                        🔹 Phone Number: ${it.phoneNumber}
+                        🔹 Email Verified: ${it.isEmailVerified}
+                        🔹 Provider ID: ${it.providerId}
+                    """.trimIndent())
+
+                val userData = User(
+                    uid = it.uid,
+                    displayName = it.displayName ?: "Unknown",
+                    email = it.email ?: "Unknown",
+                    phoneNumber = it.phoneNumber ?: "Unknown",
+                    photoUrl = it.photoUrl?.toString() ?: ""
+                )
+
+                service.postToSaveUser(userData) { success ->
+                    if (success) {
+                        val intent = Intent(this@Login, Home::class.java)
+                        startActivity(intent)
+                        finish()
+                    } else {
+                        Log.e("Retrofit", "Lưu user thất bại")
+                    }
+                }
+            }
+
+
             // Nếu có user đang đăng nhập và uid khớp, chuyển thẳng đến HomeActivity
             val intent = Intent(this, Home::class.java)
             startActivity(intent)
@@ -80,7 +114,10 @@ Log.d("SharePref", "$uid");
     override fun onActivityResult(requestCode: Int, resultCode: Int, data: Intent?) {
         super.onActivityResult(requestCode, resultCode, data)
 
-        Log.d("GOOGLE_SIGNIN", "onActivityResult: requestCode = $requestCode, resultCode = $resultCode")
+        Log.d(
+            "GOOGLE_SIGNIN",
+            "onActivityResult: requestCode = $requestCode, resultCode = $resultCode"
+        )
 
         if (requestCode == RC_SIGN_IN) {
             val task = GoogleSignIn.getSignedInAccountFromIntent(data)
@@ -104,7 +141,8 @@ Log.d("SharePref", "$uid");
                 if (task.isSuccessful) {
                     val user = mAuth.currentUser
                     user?.let {
-                        Log.d("FIREBASE_USER", """
+                        Log.d(
+                            "FIREBASE_USER", """
                         🟢 Đăng nhập thành công
                         🔹 UID: ${it.uid}
                         🔹 Display Name: ${it.displayName}
@@ -113,7 +151,8 @@ Log.d("SharePref", "$uid");
                         🔹 Phone Number: ${it.phoneNumber}
                         🔹 Email Verified: ${it.isEmailVerified}
                         🔹 Provider ID: ${it.providerId}
-                    """.trimIndent())
+                    """.trimIndent()
+                        )
 
                         val userData = User(
                             uid = it.uid,
@@ -123,7 +162,8 @@ Log.d("SharePref", "$uid");
                             photoUrl = it.photoUrl?.toString() ?: ""
                         )
 
-                        val sharedPreferences = getSharedPreferences("CoffeeShopPrefs", MODE_PRIVATE)
+                        val sharedPreferences =
+                            getSharedPreferences("CoffeeShopPrefs", MODE_PRIVATE)
                         val editor = sharedPreferences.edit()
                         editor.putString("uid", it.uid)
                         editor.apply()

@@ -1,11 +1,18 @@
 package com.example.coffeeshop.activity
 
+import android.annotation.SuppressLint
 import android.app.Activity
 import android.content.Intent
 import android.os.Bundle
 import android.util.Log
 import android.widget.Button
+import android.widget.ImageButton
+import android.widget.TextView
+import com.bumptech.glide.Glide
 import com.example.coffeeshop.R
+import com.example.coffeeshop.redux.action.Action
+import com.example.coffeeshop.redux.data_class.AppState
+import com.example.coffeeshop.redux.store.Store
 import com.google.android.gms.auth.api.signin.GoogleSignIn
 import com.google.android.gms.auth.api.signin.GoogleSignInClient
 import com.google.android.gms.auth.api.signin.GoogleSignInOptions
@@ -17,7 +24,11 @@ class Account : Activity() {
     private lateinit var mGoogleSignInClient: GoogleSignInClient
     private lateinit var mAuth: FirebaseAuth
     private lateinit var logOutButton: Button
+    private lateinit var avatar: ImageButton
+    private lateinit var displayName: TextView
+    private var store = Store.store
 
+    @SuppressLint("MissingInflatedId")
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
         setContentView(R.layout.account)
@@ -30,7 +41,9 @@ class Account : Activity() {
             .build()
         mGoogleSignInClient = GoogleSignIn.getClient(this, gso)
 
-        // Tìm nút đăng xuất
+        avatar = findViewById(R.id.avatar)
+        displayName = findViewById(R.id.display_name)
+
         logOutButton = findViewById(R.id.logout_button)
         logOutButton.setOnClickListener {
             Log.d("AccountActivity", "Logout button clicked")
@@ -39,6 +52,15 @@ class Account : Activity() {
             Log.d("SharePref", "$uid")
             signOut()
         }
+
+
+        store.subscribe {
+            runOnUiThread {
+                updateUI(store.state)
+            }
+        }
+
+        store.dispatch(Action.RefreshOrders)
 
         bottomNavigationView = findViewById(R.id.navigation)
         bottomNavigationView.selectedItemId = R.id.nav_account
@@ -72,6 +94,16 @@ class Account : Activity() {
                 else -> false
             }
         }
+    }
+
+    private fun updateUI(state: AppState) {
+        Glide.with(this)
+            .load(store.state.user?.photoUrl)
+            .placeholder(R.drawable.avatar)
+            .error(R.drawable.caffe_mocha)
+            .into(avatar)
+
+        displayName.text = "${store.state.user?.displayName}"
     }
 
     private fun signOut() {

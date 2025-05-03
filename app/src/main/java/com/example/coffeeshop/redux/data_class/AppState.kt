@@ -5,6 +5,7 @@ import com.example.coffeeshop.data_class.Category
 import com.example.coffeeshop.data_class.Coffee
 import com.example.coffeeshop.data_class.LocationData
 import com.example.coffeeshop.data_class.PendingOrder
+import com.example.coffeeshop.data_class.Promotion
 import com.example.coffeeshop.data_class.SocketResponse
 import com.example.coffeeshop.data_class.User
 import org.json.JSONArray
@@ -21,5 +22,6 @@ data class AppState(
     val user: User? = null,
     val mapData: JSONArray? = null,
     val location: LocationData? = null,
+    val selectedPromotions: ArrayList<Promotion> = arrayListOf(),
     val notifications: ArrayList<SocketResponse> = arrayListOf(),
 )

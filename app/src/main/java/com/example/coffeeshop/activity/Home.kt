@@ -178,4 +178,10 @@ class Home : Activity() {
         LocalBroadcastManager.getInstance(this).unregisterReceiver(orderStatusReceiver)
         WebSocketManager.getInstance(this).disconnect()
     }
+
+    override fun onResume() {
+        super.onResume()
+        store.dispatch(Action.RefreshOrders)
+        bottomNavigationView.selectedItemId = R.id.nav_home
+    }
 }

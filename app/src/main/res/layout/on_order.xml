@@ -350,6 +350,7 @@
                 android:background="#E3E3E3" />
 
             <GridLayout
+                android:id="@+id/open_promotion"
                 android:layout_width="match_parent"
                 android:layout_height="wrap_content"
                 android:background="@drawable/only_rounded"
