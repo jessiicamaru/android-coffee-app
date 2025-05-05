@@ -5,12 +5,17 @@ import android.content.BroadcastReceiver
 import android.content.Context
 import android.content.Intent
 import android.content.IntentFilter
+import android.os.Build
 import android.os.Bundle
 import android.util.Log
 import android.widget.ImageButton
+import androidx.annotation.RequiresApi
 import androidx.localbroadcastmanager.content.LocalBroadcastManager
+import androidx.recyclerview.widget.GridLayoutManager
+import androidx.recyclerview.widget.RecyclerView
 import com.bumptech.glide.Glide
 import com.example.coffeeshop.R
+import com.example.coffeeshop.adapter.PromotionItemAdapter
 import com.example.coffeeshop.redux.action.Action
 import com.example.coffeeshop.redux.data_class.AppState
 import com.example.coffeeshop.redux.store.Store
@@ -22,8 +27,10 @@ class Promotion : Activity() {
     private var store = Store.store
     private val service = Service()
     private lateinit var returnButton: ImageButton
+    private lateinit var productPromotionRV: RecyclerView
+    private lateinit var deliveryPromotionRV: RecyclerView
 
-
+    @RequiresApi(Build.VERSION_CODES.O)
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
         setContentView(R.layout.promotion)
@@ -37,6 +44,15 @@ class Promotion : Activity() {
             startActivity(intent)
         }
 
+        productPromotionRV = findViewById(R.id.product_promotion)
+        productPromotionRV.layoutManager = GridLayoutManager(this, 1)
+        productPromotionRV.setHasFixedSize(true)
+
+
+        deliveryPromotionRV = findViewById(R.id.delivery_promotion)
+        deliveryPromotionRV.layoutManager = GridLayoutManager(this, 1)
+        deliveryPromotionRV.setHasFixedSize(true)
+
         store.subscribe {
             runOnUiThread {
                 updateUI(store.state)
@@ -47,9 +63,27 @@ class Promotion : Activity() {
             orderStatusReceiver,
             IntentFilter(WebSocketManager.ACTION_ORDER_STATUS)
         )
+
+        service.getAllPromotion {
+            store.dispatch(Action.ModifyPromotions(store.state.invalidPromotions))
+        }
+
     }
 
     private fun updateUI(state: AppState) {
+
+        Log.d("Promotion", "${state.promotions}")
+
+        val products = state.promotions.filter { pro ->
+            pro.promotionType == "product"
+        }
+
+        val delivery = state.promotions.filter { pro ->
+            pro.promotionType == "shipping"
+        }
+
+        productPromotionRV.adapter = PromotionItemAdapter(products, this)
+        deliveryPromotionRV.adapter = PromotionItemAdapter(delivery, this)
 
     }
 

@@ -24,6 +24,7 @@ import com.example.coffeeshop.data_class.CoffeeRequest
 import com.example.coffeeshop.data_class.OrderRequest
 import com.example.coffeeshop.data_class.PendingOrder
 import com.example.coffeeshop.activity.Promotion
+import com.example.coffeeshop.data_class.FilterPromotionRequest
 import com.example.coffeeshop.data_class.UserInfo
 import com.example.coffeeshop.redux.action.Action
 import com.example.coffeeshop.redux.data_class.AppState
@@ -73,8 +74,9 @@ class OnOrder : Activity() {
         returnButton = findViewById(R.id.return_button)
         returnButton.setOnClickListener {
             store.dispatch(Action.RemoveHistory)
-            val intent = Intent(this, store.state.historyList.last()::class.java)
+            val intent = Intent(this, Home::class.java)
             startActivity(intent)
+            finish()
         }
 
         openPromotion = findViewById(R.id.open_promotion)
@@ -91,8 +93,16 @@ class OnOrder : Activity() {
         )
 
         openPromotion.setOnClickListener {
-            val intent = Intent(this, Promotion::class.java)
-            startActivity(intent)
+            Log.d("OpenPromotion", "1")
+            service.filterPromotion(FilterPromotionRequest(
+                uid = store.state.user?.uid ?: "",
+                totalAmount = price,
+                distance = shippingFee / 0.3,
+                itemCount = store.state.orders.sumOf { coffee -> coffee.quantity }
+            )) {
+                val intent = Intent(this, Promotion::class.java)
+                startActivity(intent)
+            }
         }
 
 
@@ -232,6 +242,7 @@ class OnOrder : Activity() {
 
             @SuppressLint("SetTextI18n")
             override fun onResponse(call: Call, response: Response) {
+                Log.d("Mapshit", "1");
                 runOnUiThread {
                     orderButton.isClickable = true;
                     orderButton.isEnabled = true;

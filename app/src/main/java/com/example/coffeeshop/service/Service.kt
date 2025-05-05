@@ -1,25 +1,33 @@
 package com.example.coffeeshop.service
 
+import android.os.Build
 import android.util.Log
+import androidx.annotation.RequiresApi
 import com.example.coffeeshop.api_interface.CategoryApi
 import com.example.coffeeshop.api_interface.CoffeeApi
 import com.example.coffeeshop.api_interface.LikesApi
 import com.example.coffeeshop.api_interface.OrderApi
+import com.example.coffeeshop.api_interface.PromotionApi
 import com.example.coffeeshop.api_interface.UserApi
 import com.example.coffeeshop.data_class.Category
 import com.example.coffeeshop.data_class.Coffee
+import com.example.coffeeshop.data_class.FilterPromotionRequest
 import com.example.coffeeshop.data_class.Likes
 import com.example.coffeeshop.data_class.OrderRequest
 import com.example.coffeeshop.data_class.PendingOrder
+import com.example.coffeeshop.data_class.PromotionResponse
 import com.example.coffeeshop.data_class.UpdateStatusPayload
 import com.example.coffeeshop.data_class.User
 import com.example.coffeeshop.redux.action.Action
 import com.example.coffeeshop.redux.store.Store
+import com.example.coffeeshop.utils.LocalDateTimeDeserializer
+import com.google.gson.GsonBuilder
 import retrofit2.Call
 import retrofit2.Callback
 import retrofit2.Response
 import retrofit2.Retrofit
 import retrofit2.converter.gson.GsonConverterFactory
+import java.time.LocalDateTime
 
 class Service {
     private var BASE_URL = "http://10.0.2.2:5000/"
@@ -235,6 +243,73 @@ class Service {
             override fun onFailure(call: Call<String>, t: Throwable) {
                 Log.e("Retrofit", "create order failed: ${t.message}")
 
+            }
+        })
+    }
+
+    @RequiresApi(Build.VERSION_CODES.O)
+    fun getAllPromotion(callback: (Boolean) -> Unit) {
+        val gson = GsonBuilder()
+            .registerTypeAdapter(LocalDateTime::class.java, LocalDateTimeDeserializer())
+            .create()
+
+        val api = Retrofit.Builder()
+            .baseUrl(BASE_URL)
+            .addConverterFactory(GsonConverterFactory.create(gson))
+            .build()
+            .create(PromotionApi::class.java)
+
+        api.getAllPromotion().enqueue(object : Callback<List<PromotionResponse>> {
+            override fun onResponse(
+                call: Call<List<PromotionResponse>>,
+                response: Response<List<PromotionResponse>>
+            ) {
+                if (response.isSuccessful) {
+                    response.body()?.let { promotions ->
+                        store.dispatch(Action.SetPromotions(ArrayList(promotions)))
+                        callback(true)
+                    } ?: Log.w(TAG, "Response body is null")
+                } else {
+                    Log.e(TAG, "Response failed: ${response.errorBody()?.string()}")
+                }
+            }
+
+            override fun onFailure(call: Call<List<PromotionResponse>>, t: Throwable) {
+                Log.e(TAG, "On Fail: ${t.message}", t)
+            }
+        })
+    }
+
+    fun filterPromotion(filterPromotionRequest: FilterPromotionRequest, callback: (List<String>?) -> Unit) {
+        val api = Retrofit.Builder()
+            .baseUrl(BASE_URL)
+            .addConverterFactory(GsonConverterFactory.create())
+            .build()
+            .create(PromotionApi::class.java)
+
+        Log.d("filter", "Sending request: $filterPromotionRequest")
+
+        api.filterPromotion(filterPromotionRequest).enqueue(object : Callback<List<String>> {
+            override fun onResponse(call: Call<List<String>>, response: Response<List<String>>) {
+                if (response.isSuccessful) {
+                    response.body()?.let {
+                        store.dispatch(Action.SetInvalidPromotions(ArrayList(it)))
+                        Log.d("Retrofit", "Received invalid promotions: $it")
+                        callback(it)
+                    } ?: run {
+                        Log.e("Retrofit", "Response body is null, code: ${response.code()}")
+                        callback(null)
+                    }
+                } else {
+                    val errorBody = response.errorBody()?.string() ?: "No error details"
+                    Log.e("Retrofit", "Filter failed: ${response.code()} - $errorBody")
+                    callback(null)
+                }
+            }
+
+            override fun onFailure(call: Call<List<String>>, t: Throwable) {
+                Log.e("Retrofit", "Filter error: ${t.message}", t)
+                callback(null)
             }
         })
     }

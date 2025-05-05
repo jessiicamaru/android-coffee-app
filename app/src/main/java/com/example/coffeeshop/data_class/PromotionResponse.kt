@@ -14,5 +14,6 @@ data class PromotionResponse(
     val usageLimitPerUser: Int,
     val conditions: List<PromotionCondition>,
     val discounts: List<PromotionDiscount>,
-    val eligibleUsers: List<PromotionEligibleUser>
+    val eligibleUsers: List<PromotionEligibleUser>,
+    var isInvalid: Boolean? = false
 )

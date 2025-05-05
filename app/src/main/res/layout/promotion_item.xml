@@ -1,5 +1,6 @@
 <?xml version="1.0" encoding="utf-8"?>
 <androidx.cardview.widget.CardView
+    android:id="@+id/card_view"
     xmlns:android="http://schemas.android.com/apk/res/android"
     xmlns:app="http://schemas.android.com/apk/res-auto"
     android:layout_width="match_parent"
@@ -15,7 +16,7 @@
 
         <!-- Icon bên trái -->
         <ImageView
-            android:id="@+id/ivPromotionIcon"
+            android:id="@+id/promotion_icon"
             android:layout_width="40dp"
             android:layout_height="40dp"
             android:contentDescription="Promotion Icon"
@@ -30,15 +31,16 @@
             android:layout_width="0dp"
             android:layout_height="wrap_content"
             android:orientation="vertical"
-            app:layout_constraintStart_toEndOf="@id/ivPromotionIcon"
+            app:layout_constraintStart_toEndOf="@id/promotion_icon"
             app:layout_constraintEnd_toEndOf="parent"
             app:layout_constraintTop_toTopOf="parent"
             app:layout_constraintBottom_toBottomOf="parent"
+            android:layout_marginEnd="40dp"
             android:paddingStart="16dp">
 
             <!-- Promotion Code -->
             <TextView
-                android:id="@+id/tvPromotionCode"
+                android:id="@+id/promotion_code"
                 android:layout_width="wrap_content"
                 android:layout_height="wrap_content"
                 android:text="Code: PROMO123"
@@ -47,7 +49,7 @@
 
             <!-- Expiration Date -->
             <TextView
-                android:id="@+id/tvExpirationDate"
+                android:id="@+id/exp_date"
                 android:layout_width="wrap_content"
                 android:layout_height="wrap_content"
                 android:text="Expires: 2025-05-10"
@@ -56,7 +58,7 @@
 
             <!-- Type -->
             <TextView
-                android:id="@+id/tvPromotionType"
+                android:id="@+id/promotion_type"
                 android:layout_width="wrap_content"
                 android:layout_height="wrap_content"
                 android:text="Type: Discount"
@@ -65,7 +67,7 @@
 
         </LinearLayout>
         <CheckBox
-            android:id="@+id/cbSelectPromotion"
+            android:id="@+id/checkbox"
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
             app:layout_constraintBottom_toBottomOf="@id/llPromotionContent"

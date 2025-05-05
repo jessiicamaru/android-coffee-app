@@ -6,6 +6,7 @@ import com.example.coffeeshop.data_class.Category
 import com.example.coffeeshop.data_class.Coffee
 import com.example.coffeeshop.data_class.LocationData
 import com.example.coffeeshop.data_class.PendingOrder
+import com.example.coffeeshop.data_class.PromotionResponse
 import com.example.coffeeshop.data_class.SocketResponse
 import com.example.coffeeshop.data_class.User
 import org.json.JSONArray
@@ -26,6 +27,9 @@ sealed class Action {
     data class AddHistory(val history: Activity) : Action()
     data class SetLocation(val location: LocationData) : Action()
     data class SetMapData(val mapData: JSONArray): Action()
+    data class SetPromotions(val promotions: ArrayList<PromotionResponse>) : Action()
+    data class SetInvalidPromotions(val invalidPromotionIds: ArrayList<String>): Action()
+    data class ModifyPromotions(val invalidPromotionIds: ArrayList<String>): Action()
     data class SetNotifications(val socketResponse: SocketResponse): Action()
     data class UpdateStat(val socketResponse: SocketResponse): Action()
     data object RemoveHistory : Action()

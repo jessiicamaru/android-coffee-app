@@ -61,16 +61,45 @@
                    android:gravity="center" />
 
            </GridLayout>
-           <androidx.recyclerview.widget.RecyclerView
-               android:layout_marginTop="16dp"
-               android:id="@+id/recyclerViewPromotions"
+           <LinearLayout
+               android:layout_marginTop="36dp"
                android:layout_width="match_parent"
                android:layout_height="match_parent"
-               app:layout_constraintTop_toTopOf="parent"
-               app:layout_constraintBottom_toBottomOf="parent"
-               app:layout_constraintStart_toStartOf="parent"
-               app:layout_constraintEnd_toEndOf="parent"
-               android:scrollbars="vertical" />
+               android:orientation="vertical">
+
+               <TextView
+                   android:textColor="#000"
+                   android:id="@+id/tv_today_title"
+                   android:layout_width="wrap_content"
+                   android:layout_height="wrap_content"
+                   android:text="Product"
+                   android:textSize="20sp"
+                   android:textStyle="bold"
+                   android:layout_marginBottom="8dp"/>
+
+               <androidx.recyclerview.widget.RecyclerView
+                   android:id="@+id/product_promotion"
+                   android:layout_width="match_parent"
+                   android:layout_height="wrap_content"
+                   android:layout_marginBottom="16dp"/>
+
+               <!-- Phần Before -->
+               <TextView
+                   android:id="@+id/tv_before_title"
+                   android:layout_width="wrap_content"
+                   android:textColor="#000"
+                   android:layout_height="wrap_content"
+                   android:text="Delivery"
+                   android:textSize="20sp"
+                   android:textStyle="bold"
+                   android:layout_marginBottom="8dp"/>
+
+               <androidx.recyclerview.widget.RecyclerView
+                   android:id="@+id/delivery_promotion"
+                   android:layout_width="match_parent"
+                   android:layout_height="wrap_content"/>
+
+           </LinearLayout>
        </LinearLayout>
    </ScrollView>
 

@@ -96,7 +96,23 @@ class Reducer {
                 }
 
                 is Action.SetMapData -> {
+                    Log.d("Mapdata", "Loaded")
                     state.copy(mapData = action.mapData)
+                }
+
+                is Action.SetPromotions -> state.copy(promotions = action.promotions)
+
+                is Action.SetInvalidPromotions -> state.copy(invalidPromotions = action.invalidPromotionIds)
+
+                is Action.ModifyPromotions -> {
+                    Log.d("FilterPromo", "Invalid IDs: ${action.invalidPromotionIds}")
+                    val updatedPromotions = state.promotions.map { pro ->
+                        val isInvalid = action.invalidPromotionIds.contains(pro.promotionId)
+                        Log.d("FilterPromo", "Setting isInvalid for ${pro.promotionId} to $isInvalid")
+                        pro.copy(isInvalid = isInvalid)
+                    }
+                    Log.d("FilterPromo", "Updated promotions: $updatedPromotions")
+                    state.copy(promotions = ArrayList(updatedPromotions))
                 }
 
                 is Action.UpdateStat -> {
