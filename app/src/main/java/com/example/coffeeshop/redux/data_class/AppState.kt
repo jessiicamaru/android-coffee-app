@@ -27,4 +27,6 @@ data class AppState(
     val invalidPromotions:  ArrayList<String> = arrayListOf(),
     val selectedPromotions: ArrayList<Promotion> = arrayListOf(),
     val notifications: ArrayList<SocketResponse> = arrayListOf(),
+    val shippingFee: Double? = null,
+    val distanceKm: Double? = null
 )

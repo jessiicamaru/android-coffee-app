@@ -22,10 +22,7 @@ import com.example.coffeeshop.R
 import com.example.coffeeshop.adapter.CoffeeItemOrderAdapter
 import com.example.coffeeshop.data_class.CoffeeRequest
 import com.example.coffeeshop.data_class.OrderRequest
-import com.example.coffeeshop.data_class.PendingOrder
-import com.example.coffeeshop.activity.Promotion
 import com.example.coffeeshop.data_class.FilterPromotionRequest
-import com.example.coffeeshop.data_class.UserInfo
 import com.example.coffeeshop.redux.action.Action
 import com.example.coffeeshop.redux.data_class.AppState
 import com.example.coffeeshop.redux.store.Store
@@ -37,6 +34,7 @@ import okhttp3.Callback
 import okhttp3.OkHttpClient
 import okhttp3.Request
 import okhttp3.Response
+import org.json.JSONArray
 import org.json.JSONObject
 import java.io.IOException
 import java.text.DecimalFormat
@@ -58,6 +56,8 @@ class OnOrder : Activity() {
     private val store = Store.store
     private var shippingFee: Double = 1.0
     private var price: Double = 0.0
+    private var distanceKm: Double? = null // Lưu khoảng cách
+    private var geometry: JSONArray? = null // Lưu dữ liệu geometry từ getDistance
 
     @SuppressLint("SetTextI18n", "DefaultLocale")
     override fun onCreate(savedInstanceState: Bundle?) {
@@ -87,10 +87,49 @@ class OnOrder : Activity() {
         ogFee = findViewById(R.id.og_fee)
         proFee = findViewById(R.id.pro_fee)
 
+        orderButton.isClickable = false;
+        orderButton.isEnabled = false;
+        orderButton.setBackgroundResource(R.drawable.button_non_primary)
+        orderButton.setTextColor(Color.BLACK)
+
         LocalBroadcastManager.getInstance(this).registerReceiver(
             orderStatusReceiver,
             IntentFilter(WebSocketManager.ACTION_ORDER_STATUS)
         )
+
+        if (store.state.shippingFee != null && store.state.distanceKm != null) {
+            shippingFee = store.state.shippingFee!!
+            distanceKm = store.state.distanceKm!!
+            geometry = store.state.mapData
+Log.d("Route", "1")
+            val df = DecimalFormat("#.##")
+            ogFee.text = "${df.format(shippingFee * 1.3)}$"
+            proFee.text = "${df.format(shippingFee)}$"
+            orderButton.isClickable = true
+            orderButton.isEnabled = true
+            orderButton.setBackgroundResource(R.drawable.button_primary)
+            orderButton.setTextColor(Color.WHITE)
+        } else if (savedInstanceState != null) {
+            Log.d("Route", "2")
+            shippingFee = savedInstanceState.getDouble("shippingFee", 1.0)
+            price = savedInstanceState.getDouble("price", 0.0)
+            distanceKm = savedInstanceState.getDouble("distanceKm", -1.0).takeIf { it != -1.0 }
+            val geometryString = savedInstanceState.getString("geometry")
+            if (geometryString != null) {
+                geometry = JSONArray(geometryString)
+                store.dispatch(Action.SetMapData(geometry!!))
+            }
+
+            val df = DecimalFormat("#.##")
+            ogFee.text = "${df.format(shippingFee * 1.3)}$"
+            proFee.text = "${df.format(shippingFee)}$"
+            orderButton.isClickable = true
+            orderButton.isEnabled = true
+            orderButton.setBackgroundResource(R.drawable.button_primary)
+            orderButton.setTextColor(Color.WHITE)
+        } else {
+            getDistance()
+        }
 
         openPromotion.setOnClickListener {
             Log.d("OpenPromotion", "1")
@@ -104,12 +143,6 @@ class OnOrder : Activity() {
                 startActivity(intent)
             }
         }
-
-
-        orderButton.isClickable = false;
-        orderButton.isEnabled = false;
-        orderButton.setBackgroundResource(R.drawable.button_non_primary)
-        orderButton.setTextColor(Color.BLACK)
 
         orderButton.setOnClickListener {
             store.state.user?.let { user ->
@@ -182,8 +215,6 @@ class OnOrder : Activity() {
             }
         }
 
-        getDistance()
-
         store.subscribe {
             runOnUiThread {
                 updateUI(store.state)
@@ -203,7 +234,7 @@ class OnOrder : Activity() {
         address.text = state.address ?: "Kpg. Sutoyo No. 620, Bilzen, Tanjungbalai."
 
         if (state.orders.isEmpty()) {
-            val intent = Intent(this, Home::class.java) // Thay HomeActivity bằng tên thực tế
+            val intent = Intent(this, Home::class.java)
             intent.flags = Intent.FLAG_ACTIVITY_CLEAR_TOP or Intent.FLAG_ACTIVITY_SINGLE_TOP
             startActivity(intent)
             this.finish()
@@ -221,9 +252,9 @@ class OnOrder : Activity() {
 
         val request = Request.Builder().url(url).build()
         val client = OkHttpClient.Builder()
-            .connectTimeout(30, TimeUnit.SECONDS)
-            .readTimeout(30, TimeUnit.SECONDS)
-            .writeTimeout(30, TimeUnit.SECONDS)
+            .connectTimeout(10, TimeUnit.SECONDS)
+            .readTimeout(10, TimeUnit.SECONDS)
+            .writeTimeout(10, TimeUnit.SECONDS)
             .build()
 
         client.newCall(request).enqueue(object : Callback {
@@ -231,7 +262,7 @@ class OnOrder : Activity() {
                 Log.e("Route", "Lỗi khi tải tuyến đường: ${e.message}")
                 if (retryCount < maxRetries) {
                     Log.d("Route", "Thử lại lần ${retryCount + 1}/$maxRetries")
-                    getDistance(retryCount + 1, maxRetries) // Thử lại
+                    getDistance(retryCount + 1, maxRetries)
                 } else {
                     runOnUiThread {
                         ogFee.text = "Error"
@@ -242,10 +273,10 @@ class OnOrder : Activity() {
 
             @SuppressLint("SetTextI18n")
             override fun onResponse(call: Call, response: Response) {
-                Log.d("Mapshit", "1");
+                Log.d("Mapshit", "1")
                 runOnUiThread {
-                    orderButton.isClickable = true;
-                    orderButton.isEnabled = true;
+                    orderButton.isClickable = true
+                    orderButton.isEnabled = true
                     orderButton.setBackgroundResource(R.drawable.button_primary)
                     orderButton.setTextColor(Color.WHITE)
                 }
@@ -255,9 +286,8 @@ class OnOrder : Activity() {
                     val routes = jsonObject.getJSONArray("routes")
                     val route = routes.getJSONObject(0)
 
-                    val distanceMeters = route.getDouble("distance")
-                    val distanceKm = distanceMeters / 1000.0
-                    shippingFee = distanceKm * 0.3
+                    distanceKm = route.getDouble("distance") / 1000.0
+                    shippingFee = distanceKm!! * 0.3
 
                     val df = DecimalFormat("#.##")
                     val formattedDistance = df.format(distanceKm)
@@ -265,18 +295,19 @@ class OnOrder : Activity() {
 
                     Log.d("SHIPPING", "Distance: $formattedDistance km, Fee: $$formattedFee")
 
-                    val geometry = route.getJSONObject("geometry").getJSONArray("coordinates")
+                    geometry = route.getJSONObject("geometry").getJSONArray("coordinates")
+
+                    store.dispatch(Action.SetShippingData(shippingFee, distanceKm!!))
+                    store.dispatch(Action.SetMapData(geometry!!))
 
                     runOnUiThread {
                         ogFee.text = "${df.format(shippingFee * 1.3)}$"
                         proFee.text = "$formattedFee$"
-                        store.dispatch(Action.SetMapData(geometry))
                     }
                 }
             }
         })
     }
-
     private val orderStatusReceiver = object : BroadcastReceiver() {
         override fun onReceive(context: Context, intent: Intent) {
             val orderId = intent.getStringExtra(WebSocketManager.EXTRA_ORDER_ID)
@@ -292,8 +323,17 @@ class OnOrder : Activity() {
         }
     }
 
+    override fun onSaveInstanceState(outState: Bundle) {
+        super.onSaveInstanceState(outState)
+        outState.putDouble("shippingFee", shippingFee)
+        outState.putDouble("price", price)
+        outState.putDouble("distanceKm", distanceKm ?: -1.0)
+        geometry?.let { outState.putString("geometry", it.toString()) }
+    }
+
     override fun onDestroy() {
         super.onDestroy()
+        Log.d("OnOrder", "Activity destroyed")
         LocalBroadcastManager.getInstance(this).unregisterReceiver(orderStatusReceiver)
         WebSocketManager.getInstance(this).disconnect()
     }

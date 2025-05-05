@@ -127,6 +127,11 @@ class Reducer {
                     state.copy(ordersPending = ArrayList(orders))
                 }
 
+                is Action.SetShippingData -> state.copy(
+                    shippingFee = action.shippingFee,
+                    distanceKm = action.distanceKm
+                )
+
                 is Action.RemoveCart -> state.copy(orders = arrayListOf())
                 is Action.SetOrders -> state.copy(ordersPending = action.orderRequest)
                 else -> state
