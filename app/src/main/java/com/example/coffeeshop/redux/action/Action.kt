@@ -5,6 +5,7 @@ import com.example.coffeeshop.data_class.Category
 import com.example.coffeeshop.data_class.Coffee
 import com.example.coffeeshop.data_class.LocationData
 import com.example.coffeeshop.data_class.PendingOrder
+import com.example.coffeeshop.data_class.Promotion
 import com.example.coffeeshop.data_class.PromotionResponse
 import com.example.coffeeshop.data_class.SocketResponse
 import com.example.coffeeshop.data_class.User
@@ -31,6 +32,7 @@ sealed class Action {
     data class ModifyPromotions(val invalidPromotionIds: ArrayList<String>): Action()
     data class SetNotifications(val socketResponse: SocketResponse): Action()
     data class UpdateStat(val socketResponse: SocketResponse): Action()
+    data class SetSelectedPromotion(val promotion: Promotion): Action()
     data class SetShippingData(val shippingFee: Double, val distanceKm: Double) : Action()
     data object RemoveHistory : Action()
     data object RemoveCart: Action()

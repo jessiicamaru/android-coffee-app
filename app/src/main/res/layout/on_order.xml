@@ -368,6 +368,7 @@
                     android:src="@drawable/ic_discount" />
 
                 <TextView
+                    android:id="@+id/discount_tv"
                     android:layout_width="wrap_content"
                     android:layout_height="wrap_content"
                     android:layout_rowWeight="1"
@@ -427,16 +428,38 @@
                             android:text="Price"
                             android:textColor="@color/black" />
 
-                        <TextView
-                            android:id="@+id/total_amount"
-                            android:textAlignment="textEnd"
+                        <LinearLayout
                             android:layout_width="wrap_content"
                             android:layout_height="wrap_content"
                             android:layout_rowWeight="1"
                             android:layout_columnWeight="1"
-                            android:fontFamily="@font/sora_semibold"
-                            android:text="$ 4.53"
-                            android:textColor="@color/black" />
+                            android:gravity="end"
+
+                            >
+                            <TextView
+                                android:id="@+id/og_total"
+                                android:textAlignment="textEnd"
+                                android:layout_width="wrap_content"
+                                android:layout_height="wrap_content"
+                                android:singleLine="true"
+                                android:fontFamily="@font/sora_regular"
+                                android:background="@drawable/line_through"
+                                android:text="$ 1.0"
+                                android:layout_marginEnd="8dp"
+                                android:textColor="#A2A2A2" />
+                            <TextView
+                                android:id="@+id/pro_total"
+                                android:textAlignment="textEnd"
+                                android:layout_width="wrap_content"
+                                android:layout_height="wrap_content"
+                                android:layout_rowWeight="1"
+                                android:layout_columnWeight="1"
+                                android:fontFamily="@font/sora_semibold"
+                                android:text="$ 4.53"
+                                android:textColor="@color/black" />
+                        </LinearLayout>
+
+
                     </GridLayout>
 
                     <GridLayout

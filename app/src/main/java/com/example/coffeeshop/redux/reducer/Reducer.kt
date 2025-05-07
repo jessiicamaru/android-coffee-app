@@ -132,6 +132,17 @@ class Reducer {
                     distanceKm = action.distanceKm
                 )
 
+                is Action.SetSelectedPromotion -> {
+                    val pros = state.selectedPromotions
+
+                    if (pros.find { i -> i.promotionId == action.promotion.promotionId } != null) {
+                        pros.remove(action.promotion)
+                    } else {
+                        pros.add(action.promotion)
+                    }
+                    state.copy(selectedPromotions = pros)
+                }
+
                 is Action.RemoveCart -> state.copy(orders = arrayListOf())
                 is Action.SetOrders -> state.copy(ordersPending = action.orderRequest)
                 else -> state

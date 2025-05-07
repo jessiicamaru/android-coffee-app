@@ -44,7 +44,8 @@ import java.util.concurrent.TimeUnit
 class OnOrder : Activity() {
 
     private lateinit var coffeeRecyclerView: RecyclerView
-    private lateinit var totalAmount: TextView
+    private lateinit var proTotal: TextView
+    private lateinit var ogTotal: TextView
     private lateinit var name: TextView
     private lateinit var address: TextView
     private lateinit var orderButton: Button
@@ -52,14 +53,19 @@ class OnOrder : Activity() {
     private lateinit var proFee: TextView
     private lateinit var returnButton: ImageButton
     private lateinit var openPromotion: GridLayout
+    private lateinit var discountTV: TextView
     private val service = Service()
     private val store = Store.store
     private var shippingFee: Double = 1.0
     private var price: Double = 0.0
     private var distanceKm: Double? = null // Lưu khoảng cách
     private var geometry: JSONArray? = null // Lưu dữ liệu geometry từ getDistance
+    private var originalTotal: Double = 0.0
+    private var originalFee: Double = 0.0
+    private var discountedTotal: Double = 0.0
+    private var discountedFee: Double = 0.0
 
-    @SuppressLint("SetTextI18n", "DefaultLocale")
+    @SuppressLint("SetTextI18n", "DefaultLocale", "MissingInflatedId")
     override fun onCreate(savedInstanceState: Bundle?) {
         Log.d("---------------------", "----------------------------")
         super.onCreate(savedInstanceState)
@@ -80,15 +86,17 @@ class OnOrder : Activity() {
         }
 
         openPromotion = findViewById(R.id.open_promotion)
-        totalAmount = findViewById(R.id.total_amount)
+        proTotal = findViewById(R.id.pro_total)
+        ogTotal = findViewById(R.id.og_total)
         name = findViewById(R.id.name)
         address = findViewById(R.id.adress)
         orderButton = findViewById(R.id.order)
         ogFee = findViewById(R.id.og_fee)
         proFee = findViewById(R.id.pro_fee)
+        discountTV = findViewById(R.id.discount_tv)
 
-        orderButton.isClickable = false;
-        orderButton.isEnabled = false;
+        orderButton.isClickable = false
+        orderButton.isEnabled = false
         orderButton.setBackgroundResource(R.drawable.button_non_primary)
         orderButton.setTextColor(Color.BLACK)
 
@@ -101,14 +109,8 @@ class OnOrder : Activity() {
             shippingFee = store.state.shippingFee!!
             distanceKm = store.state.distanceKm!!
             geometry = store.state.mapData
-Log.d("Route", "1")
-            val df = DecimalFormat("#.##")
-            ogFee.text = "${df.format(shippingFee * 1.3)}$"
-            proFee.text = "${df.format(shippingFee)}$"
-            orderButton.isClickable = true
-            orderButton.isEnabled = true
-            orderButton.setBackgroundResource(R.drawable.button_primary)
-            orderButton.setTextColor(Color.WHITE)
+            Log.d("Route", "1")
+            applyPromotions()
         } else if (savedInstanceState != null) {
             Log.d("Route", "2")
             shippingFee = savedInstanceState.getDouble("shippingFee", 1.0)
@@ -119,14 +121,7 @@ Log.d("Route", "1")
                 geometry = JSONArray(geometryString)
                 store.dispatch(Action.SetMapData(geometry!!))
             }
-
-            val df = DecimalFormat("#.##")
-            ogFee.text = "${df.format(shippingFee * 1.3)}$"
-            proFee.text = "${df.format(shippingFee)}$"
-            orderButton.isClickable = true
-            orderButton.isEnabled = true
-            orderButton.setBackgroundResource(R.drawable.button_primary)
-            orderButton.setTextColor(Color.WHITE)
+            applyPromotions()
         } else {
             getDistance()
         }
@@ -145,55 +140,70 @@ Log.d("Route", "1")
         }
 
         orderButton.setOnClickListener {
-            store.state.user?.let { user ->
-                val coffeesToOrder = store.state.orders.map { coffee ->
-                    CoffeeRequest(
-                        coffeeId = coffee.coffeeId,
-                        size = coffee.size,
-                        quantity = coffee.quantity
-                    )
+            Log.d("OnOrder", "Order button clicked")
+            if (store.state.user == null) {
+                Log.e("OnOrder", "User is null, cannot create order")
+                runOnUiThread {
+                    toast(this) { "User not logged in" }
                 }
-                val orderId = UUID.randomUUID().toString()
+                return@setOnClickListener
+            }
 
-                price = store.state.orders.sumOf { it.coffeeCost * it.quantity }
-                Log.d("ORDER", "Price before sending: $price")
+            val user = store.state.user!!
+            val coffeesToOrder = store.state.orders.map { coffee ->
+                CoffeeRequest(
+                    coffeeId = coffee.coffeeId,
+                    size = coffee.size,
+                    quantity = coffee.quantity
+                )
+            }
+            val orderId = UUID.randomUUID().toString()
 
-                // Sử dụng instance WebSocketManager đã có
-                val webSocketManager = WebSocketManager.getInstance(this)
-                webSocketManager.connectAndThen {
-                    runOnUiThread {
-                        store.state.address?.let { orderAddress ->
-                            service.createOrder(
-                                OrderRequest(
-                                    uid = user.uid,
-                                    coffees = coffeesToOrder,
-                                    orderId = orderId,
-                                    address = orderAddress,
-                                    total = price,
-                                    fee = shippingFee,
-                                    longitude = store.state.location?.longitude ?: 0.0,
-                                    latitude = store.state.location?.latitude ?: 0.0,
-                                    note = "",
-                                    originalTotal = 1.0,
-                                    originalFee = 1.0,
-                                    promotion = arrayListOf()
-                                )
-                            )
-                        }
+            price = store.state.orders.sumOf { it.coffeeCost * it.quantity }
+            Log.d("ORDER", "Price before sending: $price")
 
-                        // Dispatch RemoveCart sau khi gửi yêu cầu
-                        store.dispatch(Action.RemoveCart)
-
-
-                        Log.d("ORDER_ID", orderId)
-                        val intent = Intent(this, Map::class.java).apply {
-                            putExtra("stat", 0)
-                            putExtra("fee", shippingFee)
-                            putExtra("orderId", orderId)
-                            putExtra("source", "OnOrder")
-                        }
-                        startActivity(intent)
+            val webSocketManager = WebSocketManager.getInstance(this)
+            webSocketManager.connectAndThen {
+                runOnUiThread {
+                    Log.d("OnOrder", "Inside connectAndThen")
+                    if (store.state.address == null) {
+                        Log.e("OnOrder", "Address is null, cannot create order")
+                        toast(this@OnOrder) { "Address not set" }
+                        return@runOnUiThread
                     }
+
+                    val orderAddress = store.state.address!!
+                    service.createOrder(
+                        OrderRequest(
+                            uid = user.uid,
+                            coffees = coffeesToOrder,
+                            orderId = orderId,
+                            address = orderAddress,
+                            total = discountedTotal,
+                            fee = discountedFee,
+                            longitude = store.state.location?.longitude ?: 0.0,
+                            latitude = store.state.location?.latitude ?: 0.0,
+                            note = "",
+                            originalTotal = originalTotal,
+                            originalFee = originalFee,
+                            promotion = store.state.selectedPromotions
+                        )
+                    )
+
+                    Log.d("OnOrder", "Before RemoveCart, Orders: ${store.state.orders}")
+                    store.dispatch(Action.RemoveCart)
+                    Log.d("OnOrder", "After RemoveCart, Orders: ${store.state.orders}")
+
+                    Log.d("ORDER_ID", orderId)
+                    val intent = Intent(this, Map::class.java).apply {
+                        putExtra("stat", 0)
+                        putExtra("fee", shippingFee)
+                        putExtra("orderId", orderId)
+                        putExtra("source", "OnOrder")
+                    }
+                    Log.d("OnOrder", "Starting Map activity")
+                    startActivity(intent)
+                    finish()
                 }
             }
         }
@@ -227,21 +237,69 @@ Log.d("Route", "1")
     @SuppressLint("DefaultLocale", "SetTextI18n")
     private fun updateUI(state: AppState) {
         Log.d("UPDATE_UI_NOW", "Orders: ${state.orders}")
-
+        discountTV.text = "${state.selectedPromotions.size} Discount is Applied"
         price = state.orders.sumOf { it.coffeeCost * it.quantity }
-        totalAmount.text = "${String.format("%.2f", price).toDouble()}$"
+        applyPromotions()
+
         name.text = state.user?.displayName ?: "Jl. Kpg Sutoyo"
         address.text = state.address ?: "Kpg. Sutoyo No. 620, Bilzen, Tanjungbalai."
 
-        if (state.orders.isEmpty()) {
-            val intent = Intent(this, Home::class.java)
-            intent.flags = Intent.FLAG_ACTIVITY_CLEAR_TOP or Intent.FLAG_ACTIVITY_SINGLE_TOP
-            startActivity(intent)
-            this.finish()
-            return
+        coffeeRecyclerView.adapter = CoffeeItemOrderAdapter(ArrayList(state.orders), this)
+    }
+
+    private fun applyPromotions() {
+        val df = DecimalFormat("#.##")
+
+        // Tính giá trị ban đầu
+        originalFee = if (distanceKm != null) distanceKm!! * 0.3 * 1.3 else 0.0 // Phí gốc (theo UI hiện tại)
+        shippingFee = if (distanceKm != null) distanceKm!! * 0.3 else 0.0 // Phí cơ bản (trước khi áp dụng giảm giá)
+        originalTotal = price + originalFee
+
+        // Giá trị sau khi áp dụng promotion
+        var discountedPrice = price
+        discountedFee = shippingFee
+
+        // Áp dụng promotion
+        store.state.selectedPromotions.forEach { promotion ->
+            when (promotion.promotionId) {
+                "promo_001" -> { // SUMMER2025
+                    // Giả định người dùng thỏa mãn orderCount > 10 (thiếu thông tin để kiểm tra)
+                    if (price > 12.0) {
+                        val discount = price * 0.20 // Giảm 20%
+                        discountedPrice -= discount
+                        Log.d("Promotion", "Applied SUMMER2025: Discounted price = $discountedPrice")
+                    }
+                }
+                "promo_005" -> { // FREESHIP10KM
+                    if (distanceKm != null && distanceKm!! < 10.0) {
+                        discountedFee = 0.0 // Miễn phí vận chuyển
+                        Log.d("Promotion", "Applied FREESHIP10KM: Discounted fee = $discountedFee")
+                    }
+                }
+                "promo_006" -> { // NEWUSER15
+                    // Giả định người dùng là newUser (thiếu thông tin để kiểm tra)
+                    val discount = price * 0.15 // Giảm 15%
+                    discountedPrice -= discount
+                    Log.d("Promotion", "Applied NEWUSER15: Discounted price = $discountedPrice")
+                }
+            }
         }
 
-        coffeeRecyclerView.adapter = CoffeeItemOrderAdapter(ArrayList(state.orders), this)
+        discountedTotal = discountedPrice + discountedFee
+
+        // Cập nhật UI
+        ogFee.text = "${df.format(originalFee)}$"
+        proFee.text = "${df.format(discountedFee)}$"
+        ogTotal.text = "${df.format(originalTotal)}$"
+        proTotal.text = "${df.format(discountedTotal)}$"
+
+        // Cập nhật trạng thái nút order
+        runOnUiThread {
+            orderButton.isClickable = true
+            orderButton.isEnabled = true
+            orderButton.setBackgroundResource(R.drawable.button_primary)
+            orderButton.setTextColor(Color.WHITE)
+        }
     }
 
     private fun getDistance(retryCount: Int = 0, maxRetries: Int = 3) {
@@ -274,12 +332,6 @@ Log.d("Route", "1")
             @SuppressLint("SetTextI18n")
             override fun onResponse(call: Call, response: Response) {
                 Log.d("Mapshit", "1")
-                runOnUiThread {
-                    orderButton.isClickable = true
-                    orderButton.isEnabled = true
-                    orderButton.setBackgroundResource(R.drawable.button_primary)
-                    orderButton.setTextColor(Color.WHITE)
-                }
                 response.body?.let { responseBody ->
                     val responseString = responseBody.string()
                     val jsonObject = JSONObject(responseString)
@@ -300,21 +352,17 @@ Log.d("Route", "1")
                     store.dispatch(Action.SetShippingData(shippingFee, distanceKm!!))
                     store.dispatch(Action.SetMapData(geometry!!))
 
-                    runOnUiThread {
-                        ogFee.text = "${df.format(shippingFee * 1.3)}$"
-                        proFee.text = "$formattedFee$"
-                    }
+                    applyPromotions()
                 }
             }
         })
     }
+
     private val orderStatusReceiver = object : BroadcastReceiver() {
         override fun onReceive(context: Context, intent: Intent) {
             val orderId = intent.getStringExtra(WebSocketManager.EXTRA_ORDER_ID)
             val status = intent.getIntExtra(WebSocketManager.EXTRA_STATUS, -1)
             Log.d("WebSocket", "OnOrder received status for Order $orderId: $status")
-            // TODO: Cập nhật UI hoặc chuyển màn hình
-
             runOnUiThread {
                 toast(this@OnOrder) {
                     "Your order status is changed"
