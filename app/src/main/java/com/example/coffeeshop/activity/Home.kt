@@ -85,9 +85,7 @@ class Home : Activity() {
         service.getAllCategories()
         store.state.user?.let {
             service.getLikeCoffees(it.uid)
-            val webSocketManager = WebSocketManager.getInstance(this)
-            webSocketManager.initialize(it.uid)
-
+            WebSocketManager.connect(this, it.uid)
         }
 
         LocalBroadcastManager.getInstance(this).registerReceiver(
@@ -176,7 +174,7 @@ class Home : Activity() {
     override fun onDestroy() {
         super.onDestroy()
         LocalBroadcastManager.getInstance(this).unregisterReceiver(orderStatusReceiver)
-        WebSocketManager.getInstance(this).disconnect()
+//        WebSocketManager.disconnect()
     }
 
     override fun onResume() {

@@ -202,7 +202,7 @@ class Service {
         })
     }
 
-    fun createOrder(orderRequest: OrderRequest) {
+    fun createOrder(orderRequest: OrderRequest, callback: (Boolean) -> Unit) {
         val api = Retrofit.Builder()
             .baseUrl(BASE_URL)
             .addConverterFactory(GsonConverterFactory.create())
@@ -212,6 +212,7 @@ class Service {
             override fun onResponse(call: Call<Int>, response: Response<Int>) {
                 if (response.isSuccessful) {
                     Log.d("Retrofit", "create order successfully! Response: ${response.body()}")
+                    callback(true);
                 } else {
                     Log.e("Retrofit", "create order failed: ${response.errorBody()}")
                 }

@@ -169,6 +169,6 @@ class Order : Activity() {
     override fun onDestroy() {
         super.onDestroy()
         LocalBroadcastManager.getInstance(this).unregisterReceiver(orderStatusReceiver)
-        WebSocketManager.getInstance(this).disconnect()
+//        WebSocketManager.disconnect()
     }
 }

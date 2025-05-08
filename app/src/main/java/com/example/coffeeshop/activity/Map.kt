@@ -86,6 +86,11 @@ class Map : AppCompatActivity(), OnMapReadyCallback {
         mapView = findViewById(R.id.map_view)
         mapView.getMapAsync(this)
 
+        store.state.user?.let { user ->
+            WebSocketManager.connect(this, user.uid) {
+            }
+        }
+
         LocalBroadcastManager.getInstance(this).registerReceiver(
             orderStatusReceiver,
             IntentFilter(WebSocketManager.ACTION_ORDER_STATUS)
@@ -261,7 +266,6 @@ class Map : AppCompatActivity(), OnMapReadyCallback {
         super.onDestroy()
         mapView.onDestroy()
         LocalBroadcastManager.getInstance(this).unregisterReceiver(orderStatusReceiver)
-        WebSocketManager.getInstance(this).disconnect()
     }
 
     override fun onSaveInstanceState(outState: Bundle) {

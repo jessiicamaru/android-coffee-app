@@ -100,10 +100,11 @@ class OnOrder : Activity() {
         orderButton.setBackgroundResource(R.drawable.button_non_primary)
         orderButton.setTextColor(Color.BLACK)
 
-        LocalBroadcastManager.getInstance(this).registerReceiver(
-            orderStatusReceiver,
-            IntentFilter(WebSocketManager.ACTION_ORDER_STATUS)
-        )
+        store.state.user?.let { user ->
+            WebSocketManager.connect(this, user.uid) {
+            }
+        }
+
 
         if (store.state.shippingFee != null && store.state.distanceKm != null) {
             shippingFee = store.state.shippingFee!!
@@ -162,48 +163,59 @@ class OnOrder : Activity() {
             price = store.state.orders.sumOf { it.coffeeCost * it.quantity }
             Log.d("ORDER", "Price before sending: $price")
 
-            val webSocketManager = WebSocketManager.getInstance(this)
-            webSocketManager.connectAndThen {
+            if (store.state.address == null) {
+                Log.e("OnOrder", "Address is null, cannot create order")
                 runOnUiThread {
-                    Log.d("OnOrder", "Inside connectAndThen")
-                    if (store.state.address == null) {
-                        Log.e("OnOrder", "Address is null, cannot create order")
-                        toast(this@OnOrder) { "Address not set" }
-                        return@runOnUiThread
+                    toast(this@OnOrder) { "Address not set" }
+                }
+                return@setOnClickListener
+            }
+
+            val orderAddress = store.state.address!!
+            // Tạo OrderRequest với dữ liệu đã tính toán
+            val orderRequest = OrderRequest(
+                uid = user.uid,
+                coffees = coffeesToOrder,
+                orderId = orderId,
+                address = orderAddress,
+                total = discountedTotal,
+                fee = discountedFee,
+                longitude = store.state.location?.longitude ?: 0.0,
+                latitude = store.state.location?.latitude ?: 0.0,
+                note = "",
+                originalTotal = originalTotal,
+                originalFee = originalFee,
+                promotion = store.state.selectedPromotions
+            )
+
+            // Gửi yêu cầu tạo đơn hàng
+            runOnUiThread {
+                service.createOrder(orderRequest) { success ->
+                    if (success) {
+                        Log.d("OnOrder", "Order created successfully: $orderId")
+                        store.dispatch(Action.RemoveCart)
+                        Log.d("OnOrder", "Before RemoveCart, Orders: ${store.state.orders}")
+                        Log.d("OnOrder", "After RemoveCart, Orders: ${store.state.orders}")
+
+                        // Gửi thông báo qua WebSocket (nếu cần)
+                        WebSocketManager.sendMessage("Order created: $orderId") // Sử dụng trực tiếp WebSocketManager
+
+                        // Chuyển sang Map activity
+                        val intent = Intent(this, Map::class.java).apply {
+                            putExtra("stat", 0)
+                            putExtra("fee", shippingFee.toString())
+                            putExtra("orderId", orderId)
+                            putExtra("source", "OnOrder")
+                        }
+                        Log.d("OnOrder", "Starting Map activity")
+                        startActivity(intent)
+                        finish()
+                    } else {
+                        Log.e("OnOrder", "Failed to create order: $orderId")
+                        runOnUiThread {
+                            toast(this@OnOrder) { "Failed to create order" }
+                        }
                     }
-
-                    val orderAddress = store.state.address!!
-                    service.createOrder(
-                        OrderRequest(
-                            uid = user.uid,
-                            coffees = coffeesToOrder,
-                            orderId = orderId,
-                            address = orderAddress,
-                            total = discountedTotal,
-                            fee = discountedFee,
-                            longitude = store.state.location?.longitude ?: 0.0,
-                            latitude = store.state.location?.latitude ?: 0.0,
-                            note = "",
-                            originalTotal = originalTotal,
-                            originalFee = originalFee,
-                            promotion = store.state.selectedPromotions
-                        )
-                    )
-
-                    Log.d("OnOrder", "Before RemoveCart, Orders: ${store.state.orders}")
-                    store.dispatch(Action.RemoveCart)
-                    Log.d("OnOrder", "After RemoveCart, Orders: ${store.state.orders}")
-
-                    Log.d("ORDER_ID", orderId)
-                    val intent = Intent(this, Map::class.java).apply {
-                        putExtra("stat", 0)
-                        putExtra("fee", shippingFee)
-                        putExtra("orderId", orderId)
-                        putExtra("source", "OnOrder")
-                    }
-                    Log.d("OnOrder", "Starting Map activity")
-                    startActivity(intent)
-                    finish()
                 }
             }
         }
@@ -251,8 +263,10 @@ class OnOrder : Activity() {
         val df = DecimalFormat("#.##")
 
         // Tính giá trị ban đầu
-        originalFee = if (distanceKm != null) distanceKm!! * 0.3 * 1.3 else 0.0 // Phí gốc (theo UI hiện tại)
-        shippingFee = if (distanceKm != null) distanceKm!! * 0.3 else 0.0 // Phí cơ bản (trước khi áp dụng giảm giá)
+        originalFee =
+            if (distanceKm != null) distanceKm!! * 0.3 * 1.3 else 0.0 // Phí gốc (theo UI hiện tại)
+        shippingFee =
+            if (distanceKm != null) distanceKm!! * 0.3 else 0.0 // Phí cơ bản (trước khi áp dụng giảm giá)
         originalTotal = price + originalFee
 
         // Giá trị sau khi áp dụng promotion
@@ -267,15 +281,20 @@ class OnOrder : Activity() {
                     if (price > 12.0) {
                         val discount = price * 0.20 // Giảm 20%
                         discountedPrice -= discount
-                        Log.d("Promotion", "Applied SUMMER2025: Discounted price = $discountedPrice")
+                        Log.d(
+                            "Promotion",
+                            "Applied SUMMER2025: Discounted price = $discountedPrice"
+                        )
                     }
                 }
+
                 "promo_005" -> { // FREESHIP10KM
                     if (distanceKm != null && distanceKm!! < 10.0) {
                         discountedFee = 0.0 // Miễn phí vận chuyển
                         Log.d("Promotion", "Applied FREESHIP10KM: Discounted fee = $discountedFee")
                     }
                 }
+
                 "promo_006" -> { // NEWUSER15
                     // Giả định người dùng là newUser (thiếu thông tin để kiểm tra)
                     val discount = price * 0.15 // Giảm 15%
@@ -381,8 +400,6 @@ class OnOrder : Activity() {
 
     override fun onDestroy() {
         super.onDestroy()
-        Log.d("OnOrder", "Activity destroyed")
         LocalBroadcastManager.getInstance(this).unregisterReceiver(orderStatusReceiver)
-        WebSocketManager.getInstance(this).disconnect()
     }
 }
