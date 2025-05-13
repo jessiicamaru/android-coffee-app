@@ -44,7 +44,8 @@ class OrderDetail : Activity() {
     private lateinit var name: TextView
     private lateinit var address: TextView
     private lateinit var status: TextView
-    private lateinit var totalAmount: TextView
+    private lateinit var proTotal: TextView
+    private lateinit var ogTotal: TextView
     private lateinit var orderIdTV: TextView
     private lateinit var openMap: Button
     private lateinit var coffeeRecyclerView: RecyclerView
@@ -65,7 +66,8 @@ class OrderDetail : Activity() {
         store.dispatch(Action.AddHistory(this))
 
         address = findViewById(R.id.address)
-        totalAmount = findViewById(R.id.total_amount)
+        proTotal = findViewById(R.id.pro_total)
+        ogTotal = findViewById(R.id.og_total)
         name = findViewById(R.id.name)
         openMap = findViewById(R.id.open_map)
         status = findViewById(R.id.status)
@@ -145,8 +147,9 @@ class OrderDetail : Activity() {
 
         val df = DecimalFormat("#.##")
 
-        totalAmount.text = "${df.format(orderPending?.total)}$"
-        ogFee.text = "${df.format(orderPending?.fee?.times(1.3))}$"
+        ogTotal.text = "${df.format(orderPending?.originalTotal)}$"
+        proTotal.text = "${df.format(orderPending?.total)}$"
+        ogFee.text = "${df.format(orderPending?.originalFee)}$"
         proFee.text = "${df.format(orderPending?.fee)}$"
 
         val stat = statRes?: orderPending?.stat ?: 0

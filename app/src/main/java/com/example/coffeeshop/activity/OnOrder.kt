@@ -9,6 +9,7 @@ import android.content.IntentFilter
 import android.graphics.Color
 import android.os.Bundle
 import android.util.Log
+import android.view.View
 import android.widget.Button
 import android.widget.GridLayout
 import android.widget.ImageButton
@@ -263,40 +264,40 @@ class OnOrder : Activity() {
         val df = DecimalFormat("#.##")
 
         // Tính giá trị ban đầu
-        originalFee =
-            if (distanceKm != null) distanceKm!! * 0.3 * 1.3 else 0.0 // Phí gốc (theo UI hiện tại)
-        shippingFee =
-            if (distanceKm != null) distanceKm!! * 0.3 else 0.0 // Phí cơ bản (trước khi áp dụng giảm giá)
-        originalTotal = price + originalFee
+        originalFee = if (distanceKm != null) distanceKm!! * 0.3 * 1.3 else 0.0 // Phí vận chuyển gốc
+        shippingFee = if (distanceKm != null) distanceKm!! * 0.3 else 0.0 // Phí vận chuyển cơ bản
+        originalTotal = price // Giá sản phẩm gốc (quantity * price)
 
         // Giá trị sau khi áp dụng promotion
         var discountedPrice = price
         discountedFee = shippingFee
 
-        // Áp dụng promotion
-        store.state.selectedPromotions.forEach { promotion ->
+        // Lấy danh sách PromotionResponse từ store.state.promotions dựa trên selectedPromotions
+        val selectedPromotionResponses = store.state.selectedPromotions.mapNotNull { selected ->
+            store.state.promotions.find { it.promotionId == selected.promotionId }
+        }
+
+        // Kiểm tra xem có promotion nào thuộc loại "product" hoặc "shipping" không
+        val hasProductPromotion = selectedPromotionResponses.any { it.promotionType == "product" }
+        val hasShippingPromotion = selectedPromotionResponses.any { it.promotionType == "shipping" }
+
+        // Áp dụng promotion dựa trên PromotionResponse
+        selectedPromotionResponses.forEach { promotion ->
             when (promotion.promotionId) {
                 "promo_001" -> { // SUMMER2025
-                    // Giả định người dùng thỏa mãn orderCount > 10 (thiếu thông tin để kiểm tra)
                     if (price > 12.0) {
                         val discount = price * 0.20 // Giảm 20%
                         discountedPrice -= discount
-                        Log.d(
-                            "Promotion",
-                            "Applied SUMMER2025: Discounted price = $discountedPrice"
-                        )
+                        Log.d("Promotion", "Applied SUMMER2025: Discounted price = $discountedPrice")
                     }
                 }
-
                 "promo_005" -> { // FREESHIP10KM
                     if (distanceKm != null && distanceKm!! < 10.0) {
                         discountedFee = 0.0 // Miễn phí vận chuyển
                         Log.d("Promotion", "Applied FREESHIP10KM: Discounted fee = $discountedFee")
                     }
                 }
-
                 "promo_006" -> { // NEWUSER15
-                    // Giả định người dùng là newUser (thiếu thông tin để kiểm tra)
                     val discount = price * 0.15 // Giảm 15%
                     discountedPrice -= discount
                     Log.d("Promotion", "Applied NEWUSER15: Discounted price = $discountedPrice")
@@ -306,14 +307,28 @@ class OnOrder : Activity() {
 
         discountedTotal = discountedPrice + discountedFee
 
-        // Cập nhật UI
-        ogFee.text = "${df.format(originalFee)}$"
-        proFee.text = "${df.format(discountedFee)}$"
-        ogTotal.text = "${df.format(originalTotal)}$"
-        proTotal.text = "${df.format(discountedTotal)}$"
-
-        // Cập nhật trạng thái nút order
         runOnUiThread {
+            // Xử lý ogTotal và proTotal (giá sản phẩm)
+            if (hasProductPromotion) {
+                ogTotal.visibility = View.VISIBLE
+                ogTotal.text = "${df.format(originalTotal)}$"
+                proTotal.text = "${df.format(discountedPrice)}$"
+            } else {
+                ogTotal.visibility = View.GONE
+                proTotal.text = "${df.format(price)}$"
+            }
+
+            // Xử lý ogFee và proFee (phí vận chuyển)
+            if (hasShippingPromotion) {
+                ogFee.visibility = View.VISIBLE
+                ogFee.text = "${df.format(originalFee)}$"
+                proFee.text = "${df.format(discountedFee)}$"
+            } else {
+                ogFee.visibility = View.GONE
+                proFee.text = "${df.format(originalFee)}$"
+            }
+
+            // Cập nhật trạng thái nút order
             orderButton.isClickable = true
             orderButton.isEnabled = true
             orderButton.setBackgroundResource(R.drawable.button_primary)

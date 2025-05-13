@@ -6,6 +6,7 @@ import android.content.BroadcastReceiver
 import android.content.Context
 import android.content.Intent
 import android.content.IntentFilter
+import android.graphics.Color
 import android.os.Bundle
 import android.util.Log
 import android.widget.Button
@@ -102,6 +103,12 @@ class Detail : Activity() {
             likeButton.setImageResource(R.drawable.ic_heart)
         }
 
+        buyNowButton.isEnabled = false
+        buyNowButton.isClickable = false
+        buyNowButton.setTextColor(Color.BLACK)
+        buyNowButton.setBackgroundResource(R.drawable.button_non_primary)
+
+
         likeButton.setOnClickListener {
             store.state.user?.let { user ->
                 val like = Likes(
@@ -143,25 +150,47 @@ class Detail : Activity() {
                 val selectedRadioButton = group.findViewById<RadioButton>(checkedId)
                 val selectedValue = selectedRadioButton.text.toString()
                 selectedSize = selectedValue
+
+                for (i in 0 until group.childCount) {
+                    val radioButton = group.getChildAt(i) as RadioButton
+                    if (radioButton.id == checkedId) {
+                        radioButton.setTextColor(Color.WHITE)
+                    } else {
+                        radioButton.setTextColor(Color.BLACK)
+                    }
+                }
+
                 when (selectedValue) {
                     "S" -> {
                         displayCost = String.format("%.2f", cost * 0.8).toDouble()
                         coffeeCost.text = "$ $displayCost"
                     }
-
                     "L" -> {
                         displayCost = String.format("%.2f", cost * 1.3).toDouble()
                         coffeeCost.text = "$ $displayCost"
                     }
-
                     "M" -> {
                         displayCost = cost
                         coffeeCost.text = "$ $displayCost"
                     }
                 }
+
+                buyNowButton.isEnabled = true
+                buyNowButton.isClickable = true
+                buyNowButton.setTextColor(Color.WHITE)
+                buyNowButton.setBackgroundResource(R.drawable.button_primary)
+            } else {
+                for (i in 0 until group.childCount) {
+                    val radioButton = group.getChildAt(i) as RadioButton
+                    radioButton.setTextColor(Color.BLACK)
+                }
+
+                buyNowButton.isEnabled = false
+                buyNowButton.isClickable = false
+                buyNowButton.setTextColor(Color.BLACK)
+                buyNowButton.setBackgroundResource(R.drawable.button_non_primary)
             }
         }
-
         buyNowButton.setOnClickListener {
             store.dispatch(
                 Action.AddOrder(

@@ -24,6 +24,12 @@ data class PendingOrder(
     @SerializedName("fee")
     val fee: Double,
 
+    @SerializedName("originalTotal")
+    val originalTotal: Double,
+
+    @SerializedName("originalFee")
+    val originalFee: Double,
+
     @SerializedName("longitude")
     val longitude: Double,
 

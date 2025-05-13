@@ -30,9 +30,6 @@ class CoffeeItemOrderAdapter(
         val coffeeImage: ImageView = itemView.findViewById(R.id.coffee_image)
         val coffeeTitle: TextView = itemView.findViewById(R.id.coffee_title)
         val categoryTitle: TextView = itemView.findViewById(R.id.category_title)
-        val increaseButton: Button = itemView.findViewById(R.id.increase_button)
-        val decreaseButton: Button = itemView.findViewById(R.id.decrease_button)
-        val quantity: TextView = itemView.findViewById(R.id.quantity)
         val size: TextView = itemView.findViewById(R.id.size)
     }
 
@@ -59,7 +56,6 @@ class CoffeeItemOrderAdapter(
 
         holder.coffeeTitle.text = currentItem.coffeeTitle
         holder.categoryTitle.text = currentItem.categoryTitle
-        holder.quantity.text = "${currentItem.quantity}";
         holder.size.text = "Size: ${currentItem.size}"
 
         holder.itemView.setOnClickListener {
@@ -75,13 +71,5 @@ class CoffeeItemOrderAdapter(
             context.startActivity(intent)
         }
 
-
-        holder.increaseButton.setOnClickListener {
-            store.dispatch(Action.IncreaseOrderQuantity(currentItem.coffeeId, currentItem.size))
-        }
-
-        holder.decreaseButton.setOnClickListener {
-            store.dispatch(Action.DecreaseOrderQuantity(currentItem.coffeeId, currentItem.size))
-        }
     }
 }
