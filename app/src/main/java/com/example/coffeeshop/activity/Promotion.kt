@@ -75,12 +75,12 @@ class Promotion : Activity() {
         Log.d("Promotion", "${state.promotions}")
 
         val products = state.promotions.filter { pro ->
-            pro.promotionType == "product"
+            pro.promotionType.name == "product"
         }
-
         val delivery = state.promotions.filter { pro ->
-            pro.promotionType == "shipping"
+            pro.promotionType.name == "shipping"
         }
+        Log.d("Promotion", "Products: $products, Delivery: $delivery")
 
         productPromotionRV.adapter = PromotionItemAdapter(products, this)
         deliveryPromotionRV.adapter = PromotionItemAdapter(delivery, this)

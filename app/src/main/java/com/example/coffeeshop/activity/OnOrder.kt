@@ -21,6 +21,7 @@ import androidx.recyclerview.widget.GridLayoutManager
 import androidx.recyclerview.widget.RecyclerView
 import com.example.coffeeshop.R
 import com.example.coffeeshop.adapter.CoffeeItemOrderAdapter
+import com.example.coffeeshop.constants.PromotionType
 import com.example.coffeeshop.data_class.CoffeeRequest
 import com.example.coffeeshop.data_class.OrderRequest
 import com.example.coffeeshop.data_class.FilterPromotionRequest
@@ -29,6 +30,7 @@ import com.example.coffeeshop.redux.data_class.AppState
 import com.example.coffeeshop.redux.store.Store
 import com.example.coffeeshop.service.Service
 import com.example.coffeeshop.service.WebSocketManager
+import com.example.coffeeshop.utils.calculatePromotions
 import com.example.coffeeshop.utils.toast
 import okhttp3.Call
 import okhttp3.Callback
@@ -263,14 +265,19 @@ class OnOrder : Activity() {
     private fun applyPromotions() {
         val df = DecimalFormat("#.##")
 
-        // Tính giá trị ban đầu
-        originalFee = if (distanceKm != null) distanceKm!! * 0.3 * 1.3 else 0.0 // Phí vận chuyển gốc
-        shippingFee = if (distanceKm != null) distanceKm!! * 0.3 else 0.0 // Phí vận chuyển cơ bản
-        originalTotal = price // Giá sản phẩm gốc (quantity * price)
+        // Giá trị ban đầu
+        val originalFee = if (distanceKm != null) distanceKm!! * 0.3 * 1.3 else 0.0
+        val originalTotal = price
+        val shippingFee = if (distanceKm != null) distanceKm!! * 0.3 else 0.0
 
-        // Giá trị sau khi áp dụng promotion
-        var discountedPrice = price
-        discountedFee = shippingFee
+        // Tính toán giá sau khi áp dụng promotion
+        val (discountedPrice, discountedFee) = calculatePromotions(
+            price = price,
+            distanceKm = distanceKm,
+            promotions = store.state.promotions // Dùng toàn bộ danh sách promotion từ store
+        )
+
+        val discountedTotal = discountedPrice + discountedFee
 
         // Lấy danh sách PromotionResponse từ store.state.promotions dựa trên selectedPromotions
         val selectedPromotionResponses = store.state.selectedPromotions.mapNotNull { selected ->
@@ -278,34 +285,8 @@ class OnOrder : Activity() {
         }
 
         // Kiểm tra xem có promotion nào thuộc loại "product" hoặc "shipping" không
-        val hasProductPromotion = selectedPromotionResponses.any { it.promotionType == "product" }
-        val hasShippingPromotion = selectedPromotionResponses.any { it.promotionType == "shipping" }
-
-        // Áp dụng promotion dựa trên PromotionResponse
-        selectedPromotionResponses.forEach { promotion ->
-            when (promotion.promotionId) {
-                "promo_001" -> { // SUMMER2025
-                    if (price > 12.0) {
-                        val discount = price * 0.20 // Giảm 20%
-                        discountedPrice -= discount
-                        Log.d("Promotion", "Applied SUMMER2025: Discounted price = $discountedPrice")
-                    }
-                }
-                "promo_005" -> { // FREESHIP10KM
-                    if (distanceKm != null && distanceKm!! < 10.0) {
-                        discountedFee = 0.0 // Miễn phí vận chuyển
-                        Log.d("Promotion", "Applied FREESHIP10KM: Discounted fee = $discountedFee")
-                    }
-                }
-                "promo_006" -> { // NEWUSER15
-                    val discount = price * 0.15 // Giảm 15%
-                    discountedPrice -= discount
-                    Log.d("Promotion", "Applied NEWUSER15: Discounted price = $discountedPrice")
-                }
-            }
-        }
-
-        discountedTotal = discountedPrice + discountedFee
+        val hasProductPromotion = selectedPromotionResponses.any { it.promotionType.name == PromotionType.product.name}
+        val hasShippingPromotion = selectedPromotionResponses.any { it.promotionType.name == PromotionType.shipping.name }
 
         runOnUiThread {
             // Xử lý ogTotal và proTotal (giá sản phẩm)

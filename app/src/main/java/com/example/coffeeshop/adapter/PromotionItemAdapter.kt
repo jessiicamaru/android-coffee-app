@@ -47,7 +47,7 @@ class PromotionItemAdapter(
     override fun onBindViewHolder(holder: OrderViewHolder, position: Int) {
         val promotion = promotions[position]
 
-        if (promotion.promotionType == "product") {
+        if (promotion.promotionType.equals("product")) {
             holder.icon.setBackgroundResource(R.drawable.ic_product)
         } else {
             holder.icon.setBackgroundResource(R.drawable.ic_delivery)
