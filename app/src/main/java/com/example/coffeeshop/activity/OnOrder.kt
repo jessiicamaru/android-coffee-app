@@ -175,30 +175,32 @@ class OnOrder : Activity() {
             }
 
             val orderAddress = store.state.address!!
-            // Tạo OrderRequest với dữ liệu đã tính toán
+
+            val df = DecimalFormat("#.##")
+            val proTotalValue = proTotal.text.toString().replace("$", "").toDoubleOrNull() ?: 0.0
+            val proFeeValue = proFee.text.toString().replace("$", "").toDoubleOrNull() ?: 0.0
+            val ogTotalValue = if (ogTotal.visibility == View.VISIBLE) ogTotal.text.toString().replace("$", "").toDoubleOrNull() ?: proTotalValue else proTotalValue
+            val ogFeeValue = if (ogFee.visibility == View.VISIBLE) ogFee.text.toString().replace("$", "").toDoubleOrNull() ?: proFeeValue else proFeeValue
+
             val orderRequest = OrderRequest(
                 uid = user.uid,
                 coffees = coffeesToOrder,
                 orderId = orderId,
                 address = orderAddress,
-                total = discountedTotal,
-                fee = discountedFee,
+                total = proTotalValue,
+                fee = proFeeValue,
                 longitude = store.state.location?.longitude ?: 0.0,
                 latitude = store.state.location?.latitude ?: 0.0,
                 note = "",
-                originalTotal = originalTotal,
-                originalFee = originalFee,
+                originalTotal = ogTotalValue,
+                originalFee = ogFeeValue,
                 promotion = store.state.selectedPromotions
             )
 
-            // Gửi yêu cầu tạo đơn hàng
             runOnUiThread {
                 service.createOrder(orderRequest) { success ->
                     if (success) {
-                        Log.d("OnOrder", "Order created successfully: $orderId")
                         store.dispatch(Action.RemoveCart)
-                        Log.d("OnOrder", "Before RemoveCart, Orders: ${store.state.orders}")
-                        Log.d("OnOrder", "After RemoveCart, Orders: ${store.state.orders}")
 
                         // Gửi thông báo qua WebSocket (nếu cần)
                         WebSocketManager.sendMessage("Order created: $orderId") // Sử dụng trực tiếp WebSocketManager
@@ -210,7 +212,6 @@ class OnOrder : Activity() {
                             putExtra("orderId", orderId)
                             putExtra("source", "OnOrder")
                         }
-                        Log.d("OnOrder", "Starting Map activity")
                         startActivity(intent)
                         finish()
                     } else {
@@ -262,6 +263,7 @@ class OnOrder : Activity() {
         coffeeRecyclerView.adapter = CoffeeItemOrderAdapter(ArrayList(state.orders), this)
     }
 
+    @SuppressLint("SetTextI18n")
     private fun applyPromotions() {
         val df = DecimalFormat("#.##")
 
