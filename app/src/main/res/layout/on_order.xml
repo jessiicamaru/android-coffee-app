@@ -136,15 +136,34 @@
                     android:layout_marginTop="16dp"
                     android:orientation="vertical">
 
-                    <TextView
-                        android:id="@+id/name"
-                        android:layout_width="match_parent"
+                    <LinearLayout
+                        android:layout_width="wrap_content"
                         android:layout_height="wrap_content"
-                        android:fontFamily="@font/sora_semibold"
-                        android:text="Jl. Kpg Sutoyo"
-                        android:textColor="@color/black"
-                        android:textSize="16dp"
-                        tools:ignore="HardcodedText" />
+                        android:orientation="horizontal">
+
+                        <TextView
+                            android:id="@+id/name"
+                            android:layout_width="match_parent"
+                            android:layout_height="wrap_content"
+                            android:fontFamily="@font/sora_semibold"
+                            android:text="Jl. Kpg Sutoyo"
+                            android:textColor="@color/black"
+                            android:textSize="16dp"
+                            tools:ignore="HardcodedText" />
+
+                        <LinearLayout
+                            android:id="@+id/edit_name"
+                            android:layout_width="match_parent"
+                            android:layout_height="match_parent"
+                            android:paddingHorizontal="12dp"
+                            android:gravity="center">
+
+                            <ImageView
+                                android:layout_width="match_parent"
+                                android:layout_height="match_parent"
+                                android:src="@drawable/ic_edit" />
+                        </LinearLayout>
+                    </LinearLayout>
 
                     <TextView
                         android:id="@+id/adress"
@@ -166,6 +185,7 @@
                 android:orientation="horizontal">
 
                 <LinearLayout
+                    android:id="@+id/edit_address"
                     android:layout_width="wrap_content"
                     android:layout_height="wrap_content"
                     android:layout_marginEnd="8dp"
@@ -238,108 +258,108 @@
 
             </LinearLayout>
 
-<!--            <androidx.constraintlayout.widget.ConstraintLayout-->
-<!--                android:layout_width="match_parent"-->
-<!--                android:layout_height="wrap_content"-->
-<!--                android:layout_columnWeight="1"-->
-<!--                android:layout_marginBottom="8dp"-->
-<!--                android:background="@drawable/only_rounded"-->
-<!--                android:backgroundTint="@color/white"-->
-<!--                android:padding="8dp"-->
-<!--                tools:ignore="MissingConstraints">-->
+            <!--            <androidx.constraintlayout.widget.ConstraintLayout-->
+            <!--                android:layout_width="match_parent"-->
+            <!--                android:layout_height="wrap_content"-->
+            <!--                android:layout_columnWeight="1"-->
+            <!--                android:layout_marginBottom="8dp"-->
+            <!--                android:background="@drawable/only_rounded"-->
+            <!--                android:backgroundTint="@color/white"-->
+            <!--                android:padding="8dp"-->
+            <!--                tools:ignore="MissingConstraints">-->
 
-<!--                <GridLayout-->
-<!--                    android:id="@+id/myGrid"-->
-<!--                    android:layout_width="match_parent"-->
-<!--                    android:layout_height="wrap_content"-->
-<!--                    android:columnCount="2"-->
-<!--                    android:rowCount="1">-->
+            <!--                <GridLayout-->
+            <!--                    android:id="@+id/myGrid"-->
+            <!--                    android:layout_width="match_parent"-->
+            <!--                    android:layout_height="wrap_content"-->
+            <!--                    android:columnCount="2"-->
+            <!--                    android:rowCount="1">-->
 
-<!--                    <android.support.v7.widget.CardView xmlns:app="http://schemas.android.com/apk/res-auto"-->
-<!--                        android:layout_width="54dp"-->
-<!--                        android:layout_height="54dp"-->
-<!--                        android:layout_marginEnd="16dp"-->
-<!--                        app:cardCornerRadius="10dp">-->
+            <!--                    <android.support.v7.widget.CardView xmlns:app="http://schemas.android.com/apk/res-auto"-->
+            <!--                        android:layout_width="54dp"-->
+            <!--                        android:layout_height="54dp"-->
+            <!--                        android:layout_marginEnd="16dp"-->
+            <!--                        app:cardCornerRadius="10dp">-->
 
-<!--                        <ImageView-->
-<!--                            android:id="@+id/coffee_image"-->
-<!--                            android:layout_width="match_parent"-->
-<!--                            android:layout_height="match_parent"-->
-<!--                            android:scaleType="centerCrop"-->
-<!--                            android:src="@drawable/caffe_mocha" />-->
+            <!--                        <ImageView-->
+            <!--                            android:id="@+id/coffee_image"-->
+            <!--                            android:layout_width="match_parent"-->
+            <!--                            android:layout_height="match_parent"-->
+            <!--                            android:scaleType="centerCrop"-->
+            <!--                            android:src="@drawable/caffe_mocha" />-->
 
-<!--                    </android.support.v7.widget.CardView>-->
-
-
-<!--                    <LinearLayout-->
-<!--                        android:id="@+id/remove_button"-->
-<!--                        android:layout_width="wrap_content"-->
-<!--                        android:layout_height="wrap_content"-->
-<!--                        android:layout_rowWeight="1"-->
-<!--                        android:layout_columnWeight="9"-->
-<!--                        android:gravity="center"-->
-<!--                        android:orientation="vertical"-->
-<!--                        app:layout_constraintBottom_toBottomOf="parent">-->
-
-<!--                        <TextView-->
-<!--                            android:id="@+id/coffee_title"-->
-<!--                            android:layout_width="match_parent"-->
-<!--                            android:layout_height="wrap_content"-->
-<!--                            android:fontFamily="@font/sora_extrabold"-->
-<!--                            android:text="Caffe Mocha"-->
-<!--                            android:textColor="#242424"-->
-<!--                            android:textSize="16sp" />-->
-
-<!--                        <TextView-->
-<!--                            android:id="@+id/category_title"-->
-<!--                            android:layout_width="match_parent"-->
-<!--                            android:layout_height="wrap_content"-->
-<!--                            android:fontFamily="@font/sora_light"-->
-<!--                            android:text="Deep foam"-->
-<!--                            android:textColor="#A2A2A2"-->
-<!--                            android:textSize="12sp" />-->
-<!--                    </LinearLayout>-->
-<!--                </GridLayout>-->
+            <!--                    </android.support.v7.widget.CardView>-->
 
 
-<!--                <GridLayout-->
-<!--                    android:layout_width="wrap_content"-->
-<!--                    android:layout_height="wrap_content"-->
-<!--                    android:columnCount="3"-->
-<!--                    android:paddingTop="12dp"-->
-<!--                    android:rowCount="1"-->
-<!--                    app:layout_constraintEnd_toEndOf="parent">-->
+            <!--                    <LinearLayout-->
+            <!--                        android:id="@+id/remove_button"-->
+            <!--                        android:layout_width="wrap_content"-->
+            <!--                        android:layout_height="wrap_content"-->
+            <!--                        android:layout_rowWeight="1"-->
+            <!--                        android:layout_columnWeight="9"-->
+            <!--                        android:gravity="center"-->
+            <!--                        android:orientation="vertical"-->
+            <!--                        app:layout_constraintBottom_toBottomOf="parent">-->
 
-<!--                    <Button-->
-<!--                        android:id="@+id/decrease_button"-->
-<!--                        android:layout_width="32dp"-->
-<!--                        android:layout_height="32dp"-->
-<!--                        android:background="@drawable/radio_button"-->
-<!--                        android:text="-"-->
-<!--                        android:textColor="#000"-->
-<!--                        android:textSize="16sp" />-->
+            <!--                        <TextView-->
+            <!--                            android:id="@+id/coffee_title"-->
+            <!--                            android:layout_width="match_parent"-->
+            <!--                            android:layout_height="wrap_content"-->
+            <!--                            android:fontFamily="@font/sora_extrabold"-->
+            <!--                            android:text="Caffe Mocha"-->
+            <!--                            android:textColor="#242424"-->
+            <!--                            android:textSize="16sp" />-->
 
-<!--                    <TextView-->
-<!--                        android:id="@+id/quantity"-->
-<!--                        android:layout_width="32dp"-->
-<!--                        android:layout_height="32dp"-->
-<!--                        android:gravity="center"-->
-<!--                        android:text="1"-->
-<!--                        android:textColor="#000"-->
-<!--                        android:textSize="18dp" />-->
+            <!--                        <TextView-->
+            <!--                            android:id="@+id/category_title"-->
+            <!--                            android:layout_width="match_parent"-->
+            <!--                            android:layout_height="wrap_content"-->
+            <!--                            android:fontFamily="@font/sora_light"-->
+            <!--                            android:text="Deep foam"-->
+            <!--                            android:textColor="#A2A2A2"-->
+            <!--                            android:textSize="12sp" />-->
+            <!--                    </LinearLayout>-->
+            <!--                </GridLayout>-->
 
-<!--                    <Button-->
-<!--                        android:id="@+id/increase_button"-->
-<!--                        android:layout_width="32dp"-->
-<!--                        android:layout_height="32dp"-->
-<!--                        android:background="@drawable/radio_button"-->
-<!--                        android:text="+"-->
-<!--                        android:textColor="#000"-->
-<!--                        android:textSize="16sp" />-->
 
-<!--                </GridLayout>-->
+            <!--                <GridLayout-->
+            <!--                    android:layout_width="wrap_content"-->
+            <!--                    android:layout_height="wrap_content"-->
+            <!--                    android:columnCount="3"-->
+            <!--                    android:paddingTop="12dp"-->
+            <!--                    android:rowCount="1"-->
+            <!--                    app:layout_constraintEnd_toEndOf="parent">-->
 
-<!--            </androidx.constraintlayout.widget.ConstraintLayout>-->
+            <!--                    <Button-->
+            <!--                        android:id="@+id/decrease_button"-->
+            <!--                        android:layout_width="32dp"-->
+            <!--                        android:layout_height="32dp"-->
+            <!--                        android:background="@drawable/radio_button"-->
+            <!--                        android:text="-"-->
+            <!--                        android:textColor="#000"-->
+            <!--                        android:textSize="16sp" />-->
+
+            <!--                    <TextView-->
+            <!--                        android:id="@+id/quantity"-->
+            <!--                        android:layout_width="32dp"-->
+            <!--                        android:layout_height="32dp"-->
+            <!--                        android:gravity="center"-->
+            <!--                        android:text="1"-->
+            <!--                        android:textColor="#000"-->
+            <!--                        android:textSize="18dp" />-->
+
+            <!--                    <Button-->
+            <!--                        android:id="@+id/increase_button"-->
+            <!--                        android:layout_width="32dp"-->
+            <!--                        android:layout_height="32dp"-->
+            <!--                        android:background="@drawable/radio_button"-->
+            <!--                        android:text="+"-->
+            <!--                        android:textColor="#000"-->
+            <!--                        android:textSize="16sp" />-->
+
+            <!--                </GridLayout>-->
+
+            <!--            </androidx.constraintlayout.widget.ConstraintLayout>-->
 
             <LinearLayout
                 android:layout_width="match_parent"
@@ -378,12 +398,12 @@
                     android:textColor="@color/black" />
 
                 <ImageView
-                    android:padding="4dp"
                     android:layout_width="16.7dp"
                     android:layout_height="16.7dp"
                     android:layout_rowWeight="1"
                     android:layout_columnWeight="1"
                     android:layout_marginEnd="4dp"
+                    android:padding="4dp"
                     android:src="@drawable/ic_arrow_right" />
 
             </GridLayout>
@@ -415,10 +435,10 @@
                         android:layout_width="match_parent"
                         android:layout_height="wrap_content"
                         android:layout_columnWeight="1"
-                        android:columnCount="2"
-                        android:rowCount="1"
                         android:layout_marginTop="16dp"
-                        >
+                        android:columnCount="2"
+                        android:rowCount="1">
+
                         <TextView
                             android:layout_width="wrap_content"
                             android:layout_height="wrap_content"
@@ -436,26 +456,28 @@
                             android:gravity="end"
 
                             >
+
                             <TextView
                                 android:id="@+id/og_total"
-                                android:textAlignment="textEnd"
                                 android:layout_width="wrap_content"
                                 android:layout_height="wrap_content"
-                                android:singleLine="true"
-                                android:fontFamily="@font/sora_regular"
-                                android:background="@drawable/line_through"
-                                android:text="$ 1.0"
                                 android:layout_marginEnd="8dp"
+                                android:background="@drawable/line_through"
+                                android:fontFamily="@font/sora_regular"
+                                android:singleLine="true"
+                                android:text="$ 1.0"
+                                android:textAlignment="textEnd"
                                 android:textColor="#A2A2A2" />
+
                             <TextView
                                 android:id="@+id/pro_total"
-                                android:textAlignment="textEnd"
                                 android:layout_width="wrap_content"
                                 android:layout_height="wrap_content"
                                 android:layout_rowWeight="1"
                                 android:layout_columnWeight="1"
                                 android:fontFamily="@font/sora_semibold"
                                 android:text="$ 4.53"
+                                android:textAlignment="textEnd"
                                 android:textColor="@color/black" />
                         </LinearLayout>
 
@@ -467,8 +489,8 @@
                         android:layout_height="wrap_content"
                         android:layout_columnWeight="1"
                         android:columnCount="2"
-                        android:rowCount="1"
-                        >
+                        android:rowCount="1">
+
                         <TextView
                             android:layout_width="wrap_content"
                             android:layout_height="wrap_content"
@@ -486,25 +508,27 @@
                             android:gravity="end"
 
                             >
+
                             <TextView
                                 android:id="@+id/og_fee"
-                                android:textAlignment="textEnd"
                                 android:layout_width="wrap_content"
                                 android:layout_height="wrap_content"
-                                android:singleLine="true"
-                                android:fontFamily="@font/sora_regular"
-                                android:background="@drawable/line_through"
-                                android:text="$ 1.0"
                                 android:layout_marginEnd="8dp"
+                                android:background="@drawable/line_through"
+                                android:fontFamily="@font/sora_regular"
+                                android:singleLine="true"
+                                android:text="$ 1.0"
+                                android:textAlignment="textEnd"
                                 android:textColor="#A2A2A2" />
+
                             <TextView
                                 android:id="@+id/pro_fee"
-                                android:textAlignment="textEnd"
                                 android:layout_width="wrap_content"
                                 android:layout_height="wrap_content"
-
                                 android:fontFamily="@font/sora_semibold"
+
                                 android:text="$ 1.0"
+                                android:textAlignment="textEnd"
                                 android:textColor="@color/black" />
                         </LinearLayout>
                     </GridLayout>
@@ -519,17 +543,17 @@
     </ScrollView>
 
     <Button
-        app:layout_constraintTop_toBottomOf="@id/scroll_view"
         android:id="@+id/order"
-        android:layout_marginTop="16dp"
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
+        android:layout_marginTop="16dp"
         android:background="@drawable/button_primary"
-        android:text="Order"
         android:padding="16dp"
+        android:text="Order"
         android:textAllCaps="false"
         android:textColor="@color/white"
         android:textSize="16dp"
+        app:layout_constraintTop_toBottomOf="@id/scroll_view"
         tools:ignore="MissingConstraints" />
 
 

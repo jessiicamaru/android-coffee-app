@@ -2,6 +2,7 @@ package com.example.coffeeshop.activity
 
 import android.annotation.SuppressLint
 import android.app.Activity
+import android.app.AlertDialog
 import android.content.BroadcastReceiver
 import android.content.Context
 import android.content.Intent
@@ -11,8 +12,10 @@ import android.os.Bundle
 import android.util.Log
 import android.view.View
 import android.widget.Button
+import android.widget.EditText
 import android.widget.GridLayout
 import android.widget.ImageButton
+import android.widget.LinearLayout
 import android.widget.RadioButton
 import android.widget.RadioGroup
 import android.widget.TextView
@@ -57,6 +60,8 @@ class OnOrder : Activity() {
     private lateinit var returnButton: ImageButton
     private lateinit var openPromotion: GridLayout
     private lateinit var discountTV: TextView
+    private lateinit var editName: LinearLayout
+    private lateinit var editAddress: LinearLayout
     private val service = Service()
     private val store = Store.store
     private var shippingFee: Double = 1.0
@@ -67,6 +72,10 @@ class OnOrder : Activity() {
     private var originalFee: Double = 0.0
     private var discountedTotal: Double = 0.0
     private var discountedFee: Double = 0.0
+
+    companion object {
+        private const val REQUEST_CODE_ADDRESS = 1001
+    }
 
     @SuppressLint("SetTextI18n", "DefaultLocale", "MissingInflatedId")
     override fun onCreate(savedInstanceState: Bundle?) {
@@ -88,6 +97,8 @@ class OnOrder : Activity() {
             finish()
         }
 
+        editName = findViewById(R.id.edit_name)
+        editAddress = findViewById(R.id.edit_address)
         openPromotion = findViewById(R.id.open_promotion)
         proTotal = findViewById(R.id.pro_total)
         ogTotal = findViewById(R.id.og_total)
@@ -108,7 +119,6 @@ class OnOrder : Activity() {
             }
         }
 
-
         if (store.state.shippingFee != null && store.state.distanceKm != null) {
             shippingFee = store.state.shippingFee!!
             distanceKm = store.state.distanceKm!!
@@ -128,6 +138,15 @@ class OnOrder : Activity() {
             applyPromotions()
         } else {
             getDistance()
+        }
+
+        editName.setOnClickListener {
+            showEditNameDialog()
+        }
+
+        editAddress.setOnClickListener {
+            val intent = Intent(this, ChangeLocation::class.java)
+            startActivityForResult(intent, REQUEST_CODE_ADDRESS)
         }
 
         openPromotion.setOnClickListener {
@@ -176,7 +195,6 @@ class OnOrder : Activity() {
 
             val orderAddress = store.state.address!!
 
-            val df = DecimalFormat("#.##")
             val proTotalValue = proTotal.text.toString().replace("$", "").toDoubleOrNull() ?: 0.0
             val proFeeValue = proFee.text.toString().replace("$", "").toDoubleOrNull() ?: 0.0
             val ogTotalValue = if (ogTotal.visibility == View.VISIBLE) ogTotal.text.toString().replace("$", "").toDoubleOrNull() ?: proTotalValue else proTotalValue
@@ -267,12 +285,10 @@ class OnOrder : Activity() {
     private fun applyPromotions() {
         val df = DecimalFormat("#.##")
 
-        // Giá trị ban đầu
         val originalFee = if (distanceKm != null) distanceKm!! * 0.3 * 1.3 else 0.0
         val originalTotal = price
         val shippingFee = if (distanceKm != null) distanceKm!! * 0.3 else 0.0
 
-        // Tính toán giá sau khi áp dụng promotion
         val (discountedPrice, discountedFee) = calculatePromotions(
             price = price,
             distanceKm = distanceKm,
@@ -399,5 +415,41 @@ class OnOrder : Activity() {
     override fun onDestroy() {
         super.onDestroy()
         LocalBroadcastManager.getInstance(this).unregisterReceiver(orderStatusReceiver)
+    }
+
+    private fun showEditNameDialog() {
+        val builder = AlertDialog.Builder(this)
+        builder.setTitle("Edit Receiver Name")
+
+        val input = EditText(this)
+        input.setText(name.text) // Hiển thị tên hiện tại trong ô nhập liệu
+        input.hint = "Enter new name"
+        builder.setView(input)
+
+        builder.setPositiveButton("OK") { _, _ ->
+            val newName = input.text.toString().trim()
+            if (newName.isNotEmpty()) {
+                name.text = newName
+            } else {
+                toast(this) { "Name cannot be empty" }
+            }
+        }
+        builder.setNegativeButton("Cancel") { dialog, _ ->
+            dialog.cancel()
+        }
+
+        builder.show()
+    }
+
+    override fun onActivityResult(requestCode: Int, resultCode: Int, data: Intent?) {
+        super.onActivityResult(requestCode, resultCode, data)
+        if (requestCode == REQUEST_CODE_ADDRESS && resultCode == Activity.RESULT_OK) {
+            val selectedAddress = data?.getStringExtra("selected_address")
+            if (selectedAddress != null) {
+                store.dispatch(Action.SetAddress(selectedAddress))
+                address.text = selectedAddress
+                getDistance()
+            }
+        }
     }
 }
