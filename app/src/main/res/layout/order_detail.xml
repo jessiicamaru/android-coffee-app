@@ -122,29 +122,9 @@
                 android:layout_marginTop="16dp"
                 android:orientation="vertical">
 
-                <LinearLayout
-                    android:layout_width="wrap_content"
-                    android:layout_height="wrap_content"
-                    android:background="@drawable/border_1"
-                    android:gravity="center"
-                    android:orientation="horizontal"
-                    android:paddingHorizontal="12dp"
-                    android:paddingVertical="6dp">
-
-                    <ImageView
-                        android:layout_width="match_parent"
-                        android:layout_height="wrap_content"
-                        android:layout_marginEnd="4dp"
-                        android:src="@drawable/ic_edit" />
-
-                    <TextView
-                        android:layout_width="wrap_content"
-                        android:layout_height="wrap_content"
-                        android:text="Noted: "
-                        android:textColor="@color/black" />
-                </LinearLayout>
 
                 <TextView
+                    android:id="@+id/note"
                     android:layout_marginTop="8dp"
                     android:layout_width="wrap_content"
                     android:layout_height="wrap_content"

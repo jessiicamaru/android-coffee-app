@@ -49,6 +49,7 @@ class Map : AppCompatActivity(), OnMapReadyCallback {
     private lateinit var customerName: TextView
     private lateinit var timeRemaining: TextView
     private var currentOrderId: String? = null
+    private var receiveCustomer: String? = null
     private var currentFee: Double? = null // Lưu fee để không phải tìm lại trong store
     private val store = Store.store
     private val service = Service();
@@ -71,6 +72,7 @@ class Map : AppCompatActivity(), OnMapReadyCallback {
             val source = intent.getStringExtra("source")
             Log.d("source", "$source");
             if (source == "OnOrder") {
+                receiveCustomer = intent.getStringExtra("receiveCustomer")
                 val intent = Intent(this, Home::class.java)
                 intent.flags = Intent.FLAG_ACTIVITY_CLEAR_TOP or Intent.FLAG_ACTIVITY_SINGLE_TOP
                 startActivity(intent)
@@ -126,7 +128,7 @@ class Map : AppCompatActivity(), OnMapReadyCallback {
         if (statIntent != null && feeIntent != null) {
             stat = statIntent.toInt()
             fee = feeIntent.toDouble()
-            customer = store.state.user?.displayName
+            customer = receiveCustomer ?: store.state.user?.displayName
         } else if (orderId != null) {
             val order = store.state.ordersPending.find { it.orderId == orderId }
             if (order == null) {
@@ -135,7 +137,7 @@ class Map : AppCompatActivity(), OnMapReadyCallback {
             }
             stat = order.stat
             fee = order.fee // Sử dụng fee từ biến thành viên nếu không có trong store
-            customer = order.userInfo.name
+            customer = order.receiveCustomer
         } else {
             Log.e("MapActivity", "orderId is null, cannot update UI")
             return
@@ -146,14 +148,12 @@ class Map : AppCompatActivity(), OnMapReadyCallback {
 
         customerName.text = customer ?: "Unknown"
 
-        // Reset trạng thái của tất cả LinearLayout trước khi áp dụng mới
         val stats = listOf(pendingStat, preparingStat, deliveringStat, completeStat)
         stats.forEach { statView ->
-            statView.clearAnimation() // Xóa animation cũ
-            statView.setBackgroundColor(Color.TRANSPARENT) // Reset màu nền
+            statView.clearAnimation()
+            statView.setBackgroundColor(Color.TRANSPARENT)
         }
 
-        // Áp dụng màu và hiệu ứng loading cho các trạng thái
         for (i in 0..stat.coerceAtMost(stats.size - 1)) {
             if (i != stat) {
                 stats[i].setBackgroundColor(Color.parseColor("#36C07E"))

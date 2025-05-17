@@ -35,7 +35,7 @@ class OrderAdapter(private val orders: List<PendingOrder>, private val context: 
     override fun onBindViewHolder(holder: OrderViewHolder, position: Int) {
         val order = orders[position]
         holder.orderId.text = "Order ID: ${order.orderId}"
-        holder.userName.text = "Name: ${order.userInfo.name}"
+        holder.userName.text = "Name: ${order.receiveCustomer}"
         holder.userEmail.text = "Email: ${order.userInfo.email}"
         holder.createdAt.text = "Created at: ${order.createdAt}"
         holder.total.text = "Total: ${order.total}"

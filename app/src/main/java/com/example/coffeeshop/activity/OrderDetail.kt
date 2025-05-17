@@ -52,6 +52,7 @@ class OrderDetail : Activity() {
     private lateinit var ogFee: TextView
     private lateinit var proFee: TextView
     private lateinit var orderArrived: Button
+    private lateinit var note: TextView
     private var currentOrderId: String? = null;
     private val service = Service();
     private val store = Store.store
@@ -65,6 +66,7 @@ class OrderDetail : Activity() {
 
         store.dispatch(Action.AddHistory(this))
 
+        note = findViewById(R.id.note)
         address = findViewById(R.id.address)
         proTotal = findViewById(R.id.pro_total)
         ogTotal = findViewById(R.id.og_total)
@@ -141,9 +143,10 @@ class OrderDetail : Activity() {
 
         val coffees = orderPending?.coffees ?: arrayListOf();
 
-        name.text = orderPending?.userInfo?.name ?: "";
+        name.text = orderPending?.receiveCustomer;
         address.text = orderPending?.address;
         orderIdTV.text = orderId;
+        note.text = orderPending?.note ?: "";
 
         val df = DecimalFormat("#.##")
 

@@ -98,12 +98,17 @@ class ChangeLocation : AppCompatActivity(), OnMapReadyCallback {
                 }
                 // Lưu địa chỉ và tọa độ vào Store
                 runOnUiThread {
-                    store.dispatch(Action.SetAddress(savedAddress))
-                    store.dispatch(Action.SetLocation(LocationData(
+                    store.dispatch(Action.SetTempAddress(savedAddress))
+                    store.dispatch(Action.SetTempLocation(LocationData(
                         latitude = latLng.latitude,
                         longitude = latLng.longitude
                     )))
                 }
+
+                Log.d("LOCATION", "${LocationData(
+                    latitude = latLng.latitude,
+                    longitude = latLng.longitude
+                )}")
                 val resultIntent = Intent()
                 resultIntent.putExtra("selected_address", savedAddress)
                 setResult(RESULT_OK, resultIntent)

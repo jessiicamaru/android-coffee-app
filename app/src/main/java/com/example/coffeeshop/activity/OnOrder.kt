@@ -6,7 +6,6 @@ import android.app.AlertDialog
 import android.content.BroadcastReceiver
 import android.content.Context
 import android.content.Intent
-import android.content.IntentFilter
 import android.graphics.Color
 import android.os.Bundle
 import android.util.Log
@@ -28,6 +27,7 @@ import com.example.coffeeshop.constants.PromotionType
 import com.example.coffeeshop.data_class.CoffeeRequest
 import com.example.coffeeshop.data_class.OrderRequest
 import com.example.coffeeshop.data_class.FilterPromotionRequest
+import com.example.coffeeshop.data_class.LocationData
 import com.example.coffeeshop.redux.action.Action
 import com.example.coffeeshop.redux.data_class.AppState
 import com.example.coffeeshop.redux.store.Store
@@ -62,16 +62,15 @@ class OnOrder : Activity() {
     private lateinit var discountTV: TextView
     private lateinit var editName: LinearLayout
     private lateinit var editAddress: LinearLayout
+    private lateinit var addNote: LinearLayout
+    private lateinit var note: TextView
+    private lateinit var noteContainer: LinearLayout
     private val service = Service()
     private val store = Store.store
     private var shippingFee: Double = 1.0
     private var price: Double = 0.0
     private var distanceKm: Double? = null // Lưu khoảng cách
     private var geometry: JSONArray? = null // Lưu dữ liệu geometry từ getDistance
-    private var originalTotal: Double = 0.0
-    private var originalFee: Double = 0.0
-    private var discountedTotal: Double = 0.0
-    private var discountedFee: Double = 0.0
 
     companion object {
         private const val REQUEST_CODE_ADDRESS = 1001
@@ -91,12 +90,19 @@ class OnOrder : Activity() {
 
         returnButton = findViewById(R.id.return_button)
         returnButton.setOnClickListener {
+            runOnUiThread {
+                store.dispatch(Action.RemoveOrderInfo)
+                store.dispatch(Action.RemoveTempLocation)
+            }
             store.dispatch(Action.RemoveHistory)
             val intent = Intent(this, Home::class.java)
             startActivity(intent)
             finish()
         }
 
+        noteContainer = findViewById(R.id.note_container)
+        note = findViewById(R.id.note)
+        addNote = findViewById(R.id.add_note)
         editName = findViewById(R.id.edit_name)
         editAddress = findViewById(R.id.edit_address)
         openPromotion = findViewById(R.id.open_promotion)
@@ -138,6 +144,20 @@ class OnOrder : Activity() {
             applyPromotions()
         } else {
             getDistance()
+        }
+
+        if (store.state.note != null && store.state.note!!.isNotEmpty()) {
+            noteContainer.visibility = View.VISIBLE
+            note.text = store.state.note
+        } else {
+            noteContainer.visibility = View.GONE
+        }
+
+        // Khởi tạo name từ AppState
+        name.text = store.state.receiveCustomer ?: store.state.user?.displayName ?: ""
+
+        addNote.setOnClickListener {
+            showAddNote()
         }
 
         editName.setOnClickListener {
@@ -197,21 +217,27 @@ class OnOrder : Activity() {
 
             val proTotalValue = proTotal.text.toString().replace("$", "").toDoubleOrNull() ?: 0.0
             val proFeeValue = proFee.text.toString().replace("$", "").toDoubleOrNull() ?: 0.0
-            val ogTotalValue = if (ogTotal.visibility == View.VISIBLE) ogTotal.text.toString().replace("$", "").toDoubleOrNull() ?: proTotalValue else proTotalValue
-            val ogFeeValue = if (ogFee.visibility == View.VISIBLE) ogFee.text.toString().replace("$", "").toDoubleOrNull() ?: proFeeValue else proFeeValue
-
+            val ogTotalValue =
+                if (ogTotal.visibility == View.VISIBLE) ogTotal.text.toString().replace("$", "")
+                    .toDoubleOrNull() ?: proTotalValue else proTotalValue
+            val ogFeeValue =
+                if (ogFee.visibility == View.VISIBLE) ogFee.text.toString().replace("$", "")
+                    .toDoubleOrNull() ?: proFeeValue else proFeeValue
+            val receiveCustomer = name.text.toString()
+            val note = note.text.toString()
             val orderRequest = OrderRequest(
                 uid = user.uid,
                 coffees = coffeesToOrder,
                 orderId = orderId,
-                address = orderAddress,
+                address = store.state.tempAddress ?: orderAddress,
                 total = proTotalValue,
                 fee = proFeeValue,
-                longitude = store.state.location?.longitude ?: 0.0,
-                latitude = store.state.location?.latitude ?: 0.0,
-                note = "",
+                longitude = store.state.tempLocation?.longitude ?: store.state.location?.longitude ?: 0.0,
+                latitude = store.state.tempLocation?.latitude ?: store.state.location?.latitude ?: 0.0,
+                note = note,
                 originalTotal = ogTotalValue,
                 originalFee = ogFeeValue,
+                receiveCustomer = receiveCustomer,
                 promotion = store.state.selectedPromotions
             )
 
@@ -219,16 +245,15 @@ class OnOrder : Activity() {
                 service.createOrder(orderRequest) { success ->
                     if (success) {
                         store.dispatch(Action.RemoveCart)
-
-                        // Gửi thông báo qua WebSocket (nếu cần)
+                        store.dispatch(Action.RemoveOrderInfo)
                         WebSocketManager.sendMessage("Order created: $orderId") // Sử dụng trực tiếp WebSocketManager
 
-                        // Chuyển sang Map activity
                         val intent = Intent(this, Map::class.java).apply {
                             putExtra("stat", 0)
                             putExtra("fee", shippingFee.toString())
                             putExtra("orderId", orderId)
                             putExtra("source", "OnOrder")
+                            putExtra("receiveCustomer", receiveCustomer)
                         }
                         startActivity(intent)
                         finish()
@@ -275,9 +300,15 @@ class OnOrder : Activity() {
         price = state.orders.sumOf { it.coffeeCost * it.quantity }
         applyPromotions()
 
-        name.text = state.user?.displayName ?: "Jl. Kpg Sutoyo"
-        address.text = state.address ?: "Kpg. Sutoyo No. 620, Bilzen, Tanjungbalai."
+        name.text = state.receiveCustomer ?: state.user?.displayName ?: ""
+        address.text = state.tempAddress ?: state.address ?: ""
 
+        if (!state.note.isNullOrEmpty()) {
+            noteContainer.visibility = View.VISIBLE
+            note.text = state.note
+        } else {
+            noteContainer.visibility = View.GONE
+        }
         coffeeRecyclerView.adapter = CoffeeItemOrderAdapter(ArrayList(state.orders), this)
     }
 
@@ -287,15 +318,13 @@ class OnOrder : Activity() {
 
         val originalFee = if (distanceKm != null) distanceKm!! * 0.3 * 1.3 else 0.0
         val originalTotal = price
-        val shippingFee = if (distanceKm != null) distanceKm!! * 0.3 else 0.0
 
         val (discountedPrice, discountedFee) = calculatePromotions(
             price = price,
             distanceKm = distanceKm,
-            promotions = store.state.promotions // Dùng toàn bộ danh sách promotion từ store
+            promotions = store.state.promotions
         )
 
-        val discountedTotal = discountedPrice + discountedFee
 
         // Lấy danh sách PromotionResponse từ store.state.promotions dựa trên selectedPromotions
         val selectedPromotionResponses = store.state.selectedPromotions.mapNotNull { selected ->
@@ -303,8 +332,10 @@ class OnOrder : Activity() {
         }
 
         // Kiểm tra xem có promotion nào thuộc loại "product" hoặc "shipping" không
-        val hasProductPromotion = selectedPromotionResponses.any { it.promotionType.name == PromotionType.product.name}
-        val hasShippingPromotion = selectedPromotionResponses.any { it.promotionType.name == PromotionType.shipping.name }
+        val hasProductPromotion =
+            selectedPromotionResponses.any { it.promotionType.name == PromotionType.product.name }
+        val hasShippingPromotion =
+            selectedPromotionResponses.any { it.promotionType.name == PromotionType.shipping.name }
 
         runOnUiThread {
             // Xử lý ogTotal và proTotal (giá sản phẩm)
@@ -336,8 +367,12 @@ class OnOrder : Activity() {
     }
 
     private fun getDistance(retryCount: Int = 0, maxRetries: Int = 3) {
+        Log.d("LOCATION", "${
+            store.state.tempLocation?.longitude
+        } ${store.state.tempLocation?.latitude}")
+
         val url =
-            "https://router.project-osrm.org/route/v1/driving/108.2561075672051,15.990506012096326;${store.state.location?.longitude},${store.state.location?.latitude}?geometries=geojson"
+            "https://router.project-osrm.org/route/v1/driving/108.2561075672051,15.990506012096326;${store.state.tempLocation?.longitude ?: store.state.location?.longitude},${store.state.tempLocation?.latitude ?:store.state.location?.latitude}?geometries=geojson"
 
         Log.d("Route", url)
 
@@ -417,12 +452,39 @@ class OnOrder : Activity() {
         LocalBroadcastManager.getInstance(this).unregisterReceiver(orderStatusReceiver)
     }
 
+    private fun showAddNote() {
+        val builder = AlertDialog.Builder(this)
+        builder.setTitle("Add note")
+
+        val input = EditText(this)
+        input.setText(note.text)
+        input.hint = "Add note"
+        builder.setView(input)
+
+        builder.setPositiveButton("OK") { _, _ ->
+            val newNote = input.text.toString().trim()
+            if (newNote.isNotEmpty()) {
+                noteContainer.visibility = View.VISIBLE
+                note.text = newNote
+                store.dispatch(Action.SetNote(newNote))
+            } else {
+                noteContainer.visibility = View.GONE
+                store.dispatch(Action.SetNote(null))
+            }
+        }
+        builder.setNegativeButton("Cancel") { dialog, _ ->
+            dialog.cancel()
+        }
+
+        builder.show()
+    }
+
     private fun showEditNameDialog() {
         val builder = AlertDialog.Builder(this)
         builder.setTitle("Edit Receiver Name")
 
         val input = EditText(this)
-        input.setText(name.text) // Hiển thị tên hiện tại trong ô nhập liệu
+        input.setText(name.text)
         input.hint = "Enter new name"
         builder.setView(input)
 
@@ -430,6 +492,7 @@ class OnOrder : Activity() {
             val newName = input.text.toString().trim()
             if (newName.isNotEmpty()) {
                 name.text = newName
+                store.dispatch(Action.SetReceiveCustomer(newName))
             } else {
                 toast(this) { "Name cannot be empty" }
             }
@@ -446,8 +509,8 @@ class OnOrder : Activity() {
         if (requestCode == REQUEST_CODE_ADDRESS && resultCode == Activity.RESULT_OK) {
             val selectedAddress = data?.getStringExtra("selected_address")
             if (selectedAddress != null) {
-                store.dispatch(Action.SetAddress(selectedAddress))
                 address.text = selectedAddress
+                Log.d("onActivityResult","1")
                 getDistance()
             }
         }

@@ -142,9 +142,14 @@ class Reducer {
                     }
                     state.copy(selectedPromotions = pros)
                 }
-
+                is Action.SetTempAddress -> state.copy(tempAddress = action.address)
+                is Action.SetTempLocation -> state.copy(tempLocation = action.location)
+                is Action.RemoveOrderInfo -> state.copy(note = null, receiveCustomer = null, tempAddress = null)
+                is Action.RemoveTempLocation -> state.copy(tempLocation = null)
                 is Action.RemoveCart -> state.copy(orders = arrayListOf())
                 is Action.SetOrders -> state.copy(ordersPending = action.orderRequest)
+                is Action.SetNote -> state.copy(note = action.note)
+                is Action.SetReceiveCustomer -> state.copy(receiveCustomer = action.receiveCustomer)
                 else -> state
             }
         }

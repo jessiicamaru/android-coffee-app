@@ -210,6 +210,7 @@
                 </LinearLayout>
 
                 <LinearLayout
+                    android:id="@+id/add_note"
                     android:layout_width="wrap_content"
                     android:layout_height="wrap_content"
                     android:background="@drawable/border_1"
@@ -230,6 +231,26 @@
                         android:text="Add note"
                         android:textColor="@color/black" />
                 </LinearLayout>
+            </LinearLayout>
+
+            <LinearLayout
+                android:id="@+id/note_container"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:orientation="vertical"
+                >
+                <TextView
+                    android:layout_marginTop="8dp"
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:text="Noted: "
+                    android:textColor="@color/black" />
+                <TextView
+                    android:id="@+id/note"
+                    android:layout_width="match_parent"
+                    android:layout_height="wrap_content"
+                    android:text=""
+                    android:textColor="#A2A2A2" />
             </LinearLayout>
 
             <LinearLayout

@@ -39,6 +39,9 @@ data class PendingOrder(
     @SerializedName("note")
     val note: String,
 
+    @SerializedName("receiveCustomer")
+    val receiveCustomer: String,
+
     @SerializedName("coffees")
     val coffees: List<Coffee>
 )

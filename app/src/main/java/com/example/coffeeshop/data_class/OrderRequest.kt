@@ -12,6 +12,7 @@ data class OrderRequest(
     val longitude: Double,
     val latitude: Double,
     val note: String,
+    val receiveCustomer: String,
     val promotion: List<Promotion> ?= listOf(),
 )
 
